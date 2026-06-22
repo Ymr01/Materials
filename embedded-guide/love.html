@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>给阿依曼</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: '微软雅黑', 'PingFang SC', sans-serif;
+    background: linear-gradient(135deg, #f6d5e0 0%, #e8eaf6 50%, #d7eef5 100%);
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; color: #555; min-height: 100vh; position: relative;
+    overflow-x: hidden;
+  }
+
+  /* 通用卡片 */
+  .card {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(8px);
+    padding: 44px 36px; border-radius: 24px;
+    box-shadow: 0 16px 48px rgba(150,130,170,0.25);
+    max-width: 90vw; width: 420px; position: relative; z-index: 2;
+  }
+
+  /* 登录界面 */
+  #loginCard h1 { font-size: 1.5em; color: #7e57c2; margin-bottom: 6px; }
+  #loginCard .tip { font-size: 0.9em; color: #999; margin-bottom: 26px; }
+  .field { margin-bottom: 16px; text-align: left; }
+  .field label { display: block; font-size: 0.85em; color: #888; margin-bottom: 6px; }
+  .field input {
+    width: 100%; padding: 12px 14px; border: 1px solid #ddd;
+    border-radius: 12px; font-size: 1em; font-family: inherit; outline: none;
+    transition: border 0.2s;
+  }
+  .field input:focus { border-color: #b39ddb; }
+  .login-btn {
+    width: 100%; margin-top: 10px; border: none; border-radius: 12px;
+    padding: 13px; font-size: 1.05em; cursor: pointer; font-family: inherit;
+    background: linear-gradient(135deg, #9575cd, #7e57c2); color: #fff;
+    transition: transform 0.15s, box-shadow 0.2s;
+  }
+  .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(126,87,194,0.35); }
+  .err { color: #e53935; font-size: 0.85em; margin-top: 12px; min-height: 18px; }
+
+  /* 内容界面 */
+  #mainCard { display: none; }
+  #mainCard h1 { font-size: 1.7em; color: #7e57c2; margin-bottom: 18px; }
+  #mainCard p { font-size: 1.05em; line-height: 1.9; color: #555; margin-bottom: 14px; }
+  #mainCard .sign { margin-top: 24px; color: #999; font-size: 0.95em; }
+  .emoji { font-size: 2.4em; display: block; margin-bottom: 12px; }
+
+  /* 飘落小装饰 */
+  .deco { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+  .dot {
+    position: absolute; font-size: 20px; opacity: 0.6;
+    animation: fall linear infinite;
+  }
+  @keyframes fall {
+    0% { transform: translateY(-10vh) rotate(0); }
+    100% { transform: translateY(110vh) rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="deco" id="deco"></div>
+
+<!-- 登录界面 -->
+<div class="card" id="loginCard">
+  <h1>欢迎回来 🌸</h1>
+  <p class="tip">请登录后查看</p>
+  <div class="field">
+    <label>用户名</label>
+    <input type="text" id="username" placeholder="请输入用户名" autocomplete="off">
+  </div>
+  <div class="field">
+    <label>密码</label>
+    <input type="password" id="password" placeholder="请输入密码">
+  </div>
+  <button class="login-btn" id="loginBtn">登录</button>
+  <div class="err" id="errMsg"></div>
+</div>
+
+<!-- 内容界面 -->
+<div class="card" id="mainCard">
+  <span class="emoji">🌷</span>
+  <h1>致 阿依曼</h1>
+  <p>
+    很高兴有你在身边。<br>
+    平平淡淡的每一天，<br>
+    因为是和你一起，所以都很特别。
+  </p>
+  <p>
+    谢谢你愿意陪我，<br>
+    往后的日子，我们一起慢慢走。
+  </p>
+  <p class="sign">—— 伊木然</p>
+</div>
+
+<script>
+  // 装饰飘落
+  const deco = document.getElementById('deco');
+  const items = ['🌸','🌷','✨','🍃','💐'];
+  for (let i = 0; i < 20; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.textContent = items[Math.floor(Math.random()*items.length)];
+    d.style.left = Math.random()*100 + 'vw';
+    d.style.animationDuration = (6 + Math.random()*6) + 's';
+    d.style.animationDelay = Math.random()*6 + 's';
+    d.style.fontSize = (14 + Math.random()*16) + 'px';
+    deco.appendChild(d);
+  }
+
+  // 登录验证
+  const USER = 'aymymr';
+  const PASS = '9991314';
+  const loginBtn = document.getElementById('loginBtn');
+  const errMsg = document.getElementById('errMsg');
+
+  function tryLogin() {
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value;
+    if (u === USER && p === PASS) {
+      document.getElementById('loginCard').style.display = 'none';
+      document.getElementById('mainCard').style.display = 'block';
+    } else {
+      errMsg.textContent = '用户名或密码不对哦，再试试 🥺';
+    }
+  }
+
+  loginBtn.addEventListener('click', tryLogin);
+  // 回车也能登录
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') tryLogin();
+  });
+  document.getElementById('username').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('password').focus();
+  });
+</script>
+
+</body>
+</html>
