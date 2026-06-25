@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>重力迷宫</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:#0a0e1a;color:#fff;overflow:hidden;
+  display:flex;justify-content:center;align-items:center;min-height:100vh}
+#app{position:relative}
+canvas{display:block;border-radius:12px;background:#1a1f2e;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);touch-action:none}
+.hud{position:absolute;top:20px;left:20px;right:20px;display:flex;
+  justify-content:space-between;font-size:16px;font-weight:600;
+  pointer-events:none;text-shadow:0 2px 4px rgba(0,0,0,.5)}
+.hud>div{background:rgba(10,14,26,.85);padding:8px 14px;border-radius:8px}
+.msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(10,14,26,.98);padding:32px;border-radius:16px;
+  text-align:center;display:none;box-shadow:0 16px 48px rgba(0,0,0,.6);min-width:240px}
+.msg.on{display:block}
+.msg h2{font-size:24px;margin-bottom:12px}
+.msg p{color:#aaa;margin-bottom:20px}
+.msg button{padding:12px 28px;border:none;border-radius:8px;
+  background:#4fc3f7;color:#000;font-size:15px;font-weight:600;
+  cursor:pointer;margin:0 4px}
+.msg button:hover{background:#6ed4fa}
+.msg button.alt{background:#333;color:#fff}
+.msg button.alt:hover{background:#444}
+.tip{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  color:#ccc;font-size:13px;pointer-events:none;white-space:nowrap;
+  background:rgba(10,14,26,.8);padding:6px 12px;border-radius:6px}
+</style>
+</head>
+<body>
+<div id="app">
+<canvas id="c" width="700" height="560"></canvas>
+<div class="hud">
+<div>关卡 <span id="lv">1</span> / <span id="lvmax">1</span> &nbsp;·&nbsp; <span style="color:#ff6b6b">❤</span> <span id="lives">3</span></div>
+<div>★ <span id="stars">0</span></div>
+</div>
+<div class="tip">鼠标移动控制重力方向 · 让蓝球滚到绿色区域</div>
+<div class="msg" id="win">
+<h2 id="winh">🎉 过关</h2>
+<p id="wintxt"></p>
+<button id="next">下一关</button>
+<button id="replay" class="alt">重玩本关</button>
+</div>
+<div class="msg" id="fail">
+<h2 id="failh">💥 失败</h2>
+<p id="failtxt">没命了</p>
+<button id="retry">重新挑战</button>
+</div>
+</div>
+<script>
+const TAU=Math.PI*2;
+const c=document.getElementById('c'),ctx=c.getContext('2d');
+const W=c.width,H=c.height;
+
+// 关卡模板（每关 reload 时深拷贝一份，避免改到原数据）
+const TEMPLATES=[
+  { // 关 1：竖墙走廊
+    start:[50,80], goal:[620,480,30],
+    walls:[[180,120,16,300],[480,160,16,300]],
+    pits:[],
+    stars:[[100,300],[280,90],[280,460],[400,90],[400,460],[580,120],[580,300]]
+  },
+  { // 关 2：上下夹道 + 中间黑洞
+    start:[50,80], goal:[620,480,30],
+    walls:[[80,80,520,16],[80,H-96,520,16]],
+    pits:[[350,280,46]],
+    stars:[[160,200],[560,360],[280,200],[480,360],[160,360],[560,200],[420,200]]
+  },
+  { // 关 3：方块阵 + 双黑洞
+    start:[60,H-80], goal:[630,80,28],
+    walls:[[160,140,80,80],[320,300,80,80],[480,140,80,80],
+           [160,380,80,80],[480,380,80,80]],
+    pits:[[280,220,32],[420,440,32]],
+    stars:[[80,280],[280,80],[280,460],[630,280],[420,80],[630,460],[80,460]]
+  },
+  { // 关 4：S 形交错通道
+    start:[60,80], goal:[630,490,28],
+    walls:[
+      [140,70,16,260],   // 第1堵（顶→中）
+      [260,250,16,240],  // 第2堵（中→底）
+      [380,70,16,260],   // 第3堵（顶→中）
+      [500,250,16,240]   // 第4堵（中→底）
+    ],
+    pits:[[200,440,28],[440,140,28]],
+    stars:[[80,300],[200,120],[320,440],[320,140],[440,440],[560,120],[620,300],[200,260],[440,260]]
+  },
+  { // 关 5：Boss 关 — 中心黑洞群 + 围墙
+    start:[60,80], goal:[630,490,26],
+    walls:[
+      [200,140,300,16],  // 上横
+      [200,420,300,16],  // 下横
+      [200,140,16,140],  // 左上竖
+      [484,300,16,136],  // 右下竖
+    ],
+    pits:[[280,280,30],[420,280,30],[350,200,24],[350,360,24]],
+    stars:[[100,300],[350,80],[350,500],[600,300],[260,260],[440,260],[260,340],[440,340]]
+  }
+];
+const LV_MAX=TEMPLATES.length;
+document.getElementById('lvmax').textContent=LV_MAX;
+
+let cur,ball,mx=W/2,my=H/2,lv=0,score=0,lives=3,invuln=0,status='play';
+const SPIKE_H=12;     // 刺的高度
+const SPIKE_W=14;     // 单根刺底宽
+const HIT_COOLDOWN=1.2; // 受伤后无敌时间(秒)
+
+function clone(t){
+  return {
+    start:t.start.slice(),
+    goal:t.goal.slice(),
+    walls:t.walls.map(w=>w.slice()),
+    pits:t.pits.map(p=>p.slice()),
+    stars:t.stars.map(s=>s.slice())
+  };
+}
+
+function load(i){
+  lv=i;
+  cur=clone(TEMPLATES[i]);
+  ball={x:cur.start[0],y:cur.start[1],vx:0,vy:0,r:13};
+  invuln=0;
+  status='play';
+  document.getElementById('lv').textContent=i+1;
+  document.getElementById('lives').textContent=lives;
+  hide();
+}
+
+// 球重生（不重置星星和已捡道具），用于掉血后
+function respawn(){
+  ball.x=cur.start[0]; ball.y=cur.start[1];
+  ball.vx=0; ball.vy=0;
+  invuln=HIT_COOLDOWN;
+}
+
+function hurt(reason){
+  if(invuln>0||status!=='play')return;
+  lives--;
+  document.getElementById('lives').textContent=Math.max(0,lives);
+  // 死一次 → 星星清零 + 当前关星星全部刷新
+  score=0;
+  document.getElementById('stars').textContent=0;
+  cur.stars=TEMPLATES[lv].stars.map(s=>s.slice());
+  if(lives<=0){
+    status='fail';
+    document.getElementById('failtxt').textContent=reason==='spike'?'被刺扎到，没命了':'掉进黑洞，没命了';
+    show('fail');
+  }else{
+    respawn();
+  }
+}
+
+function update(dt){
+  if(status!=='play')return;
+  if(invuln>0)invuln=Math.max(0,invuln-dt);
+  // 重力指向鼠标位置
+  const dx=mx-ball.x, dy=my-ball.y, len=Math.hypot(dx,dy)||1;
+  const G=420;
+  ball.vx += dx/len*G*dt;
+  ball.vy += dy/len*G*dt;
+  // 黑洞吸力：刺尖外 PIT_PULL 像素范围内开始拉拽，越近越强
+  const PIT_PULL=70, PULL_G=900;
+  for(const p of cur.pits){
+    const px=p[0]-ball.x, py=p[1]-ball.y;
+    const pd=Math.hypot(px,py)||1;
+    const reach=p[2]+PIT_PULL;
+    if(pd<reach){
+      // 力度从外圈 0 线性升到内圈 PULL_G
+      const t=1-(pd-p[2])/PIT_PULL; // pd<=p[2] 时 t=1
+      const k=Math.max(0,Math.min(1,t));
+      ball.vx += px/pd*PULL_G*k*dt;
+      ball.vy += py/pd*PULL_G*k*dt;
+    }
+  }
+  // 帧率无关阻尼（0.98/帧 @60fps 等价的连续衰减）
+  const damp=Math.pow(0.4, dt); // 每秒衰减到 40%
+  ball.vx*=damp; ball.vy*=damp;
+  // 限速：避免穿墙
+  const VMAX=600, v=Math.hypot(ball.vx,ball.vy);
+  if(v>VMAX){ ball.vx=ball.vx/v*VMAX; ball.vy=ball.vy/v*VMAX; }
+  // 子步推进（步长不超过半径，进一步防穿墙）
+  const step=Math.max(1,Math.ceil(v*dt/(ball.r*0.5)));
+  const sdt=dt/step;
+  for(let s=0;s<step;s++){
+    ball.x+=ball.vx*sdt;
+    ball.y+=ball.vy*sdt;
+    collide();
+    if(status!=='play')break;
+  }
+}
+
+function collide(){
+  // 外框 4 面墙
+  const walls=cur.walls.concat([
+    [0,0,W,16],[0,0,16,H],[W-16,0,16,H],[0,H-16,W,16]
+  ]);
+  walls.forEach(w=>{
+    const cx=Math.max(w[0],Math.min(ball.x,w[0]+w[2]));
+    const cy=Math.max(w[1],Math.min(ball.y,w[1]+w[3]));
+    const dx=ball.x-cx, dy=ball.y-cy, d=Math.hypot(dx,dy);
+    if(d<ball.r && d>0){
+      const push=ball.r-d;
+      ball.x+=dx/d*push; ball.y+=dy/d*push;
+      const vn=(ball.vx*dx+ball.vy*dy)/d;
+      if(vn<0){
+        ball.vx-=1.4*vn*dx/d;
+        ball.vy-=1.4*vn*dy/d;
+      }
+    } else if(d===0){
+      // 球心正好在角点上，给个微小推力解套
+      ball.x-=ball.vx*0.01; ball.y-=ball.vy*0.01;
+    }
+  });
+  // 黑洞
+  for(const p of cur.pits){
+    if(Math.hypot(ball.x-p[0],ball.y-p[1])<p[2]-ball.r*0.5){
+      hurt('pit');
+      if(status!=='play')return;
+      break;
+    }
+  }
+  // 外框刺：刺尖位于内框边线 (x=16+SPIKE_H 等)，球心进入这条线即扎到
+  // 上边刺尖 y = 16 + SPIKE_H，下边刺尖 y = H-16-SPIKE_H，左右同理
+  const inner=16+SPIKE_H;
+  if(ball.x-ball.r < inner ||
+     ball.x+ball.r > W-inner ||
+     ball.y-ball.r < inner ||
+     ball.y+ball.r > H-inner){
+    hurt('spike');
+    if(status!=='play')return;
+  }
+  // 星星
+  cur.stars=cur.stars.filter(s=>{
+    if(Math.hypot(ball.x-s[0],ball.y-s[1])<ball.r+9){
+      score++;
+      document.getElementById('stars').textContent=score;
+      return false;
+    }
+    return true;
+  });
+  // 终点
+  const g=cur.goal;
+  if(Math.hypot(ball.x-g[0],ball.y-g[1])<g[2]){
+    status='win';
+    document.getElementById('wintxt').textContent=
+      cur.stars.length?`还剩 ${cur.stars.length} 颗星没捡`:'⭐ 全收集！';
+    show('win');
+  }
+}
+
+function draw(){
+  ctx.fillStyle='#1a1f2e'; ctx.fillRect(0,0,W,H);
+  // 重力指引线（从球到鼠标，虚线）
+  if(status==='play'){
+    ctx.strokeStyle='rgba(79,195,247,.18)';
+    ctx.lineWidth=1; ctx.setLineDash([4,6]);
+    ctx.beginPath(); ctx.moveTo(ball.x,ball.y); ctx.lineTo(mx,my); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  // 墙
+  ctx.fillStyle='#2a3345';
+  ctx.fillRect(0,0,W,16); ctx.fillRect(0,0,16,H);
+  ctx.fillRect(W-16,0,16,H); ctx.fillRect(0,H-16,W,16);
+  cur.walls.forEach(w=>ctx.fillRect(w[0],w[1],w[2],w[3]));
+  // 四周刺（沿内框排布，三角形朝向内）
+  drawSpikes();
+  // 黑洞（带吸力外圈）
+  cur.pits.forEach(p=>{
+    // 外圈吸力范围（淡紫色渐变）
+    const PR=p[2]+70;
+    const og=ctx.createRadialGradient(p[0],p[1],p[2],p[0],p[1],PR);
+    og.addColorStop(0,'rgba(140,80,200,.35)');
+    og.addColorStop(1,'rgba(140,80,200,0)');
+    ctx.fillStyle=og; ctx.beginPath(); ctx.arc(p[0],p[1],PR,0,TAU); ctx.fill();
+    // 黑洞本体
+    const g=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],p[2]);
+    g.addColorStop(0,'#000'); g.addColorStop(1,'#1a1f2e');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p[0],p[1],p[2],0,TAU); ctx.fill();
+  });
+  // 终点
+  const goal=cur.goal;
+  const gg=ctx.createRadialGradient(goal[0],goal[1],0,goal[0],goal[1],goal[2]);
+  gg.addColorStop(0,'#66ff88'); gg.addColorStop(1,'#22aa55');
+  ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(goal[0],goal[1],goal[2],0,TAU); ctx.fill();
+  // 星星
+  ctx.fillStyle='#ffd54f';
+  cur.stars.forEach(s=>{
+    ctx.beginPath();
+    for(let i=0;i<10;i++){
+      const a=i*Math.PI/5-Math.PI/2, r=i%2?4:9;
+      const x=s[0]+Math.cos(a)*r, y=s[1]+Math.sin(a)*r;
+      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+    }
+    ctx.closePath(); ctx.fill();
+  });
+  // 球（无敌时闪烁）
+  const blink = invuln>0 && Math.floor(invuln*10)%2===0;
+  if(!blink){
+    const bg=ctx.createRadialGradient(ball.x-3,ball.y-3,0,ball.x,ball.y,ball.r);
+    bg.addColorStop(0,'#80d8ff'); bg.addColorStop(1,'#4fc3f7');
+    ctx.fillStyle=bg; ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,TAU); ctx.fill();
+  }
+  // 鼠标十字（重力源）
+  if(status==='play'){
+    ctx.strokeStyle='rgba(79,195,247,.6)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(mx,my,14,0,TAU); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mx-7,my); ctx.lineTo(mx+7,my); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mx,my-7); ctx.lineTo(mx,my+7); ctx.stroke();
+  }
+}
+
+let last=0;
+function loop(t){
+  const dt=last?Math.min((t-last)/1000,0.033):0;
+  last=t;
+  update(dt); draw();
+  requestAnimationFrame(loop);
+}
+
+// 沿四条边内侧画三角形刺，刺尖朝向迷宫内
+function drawSpikes(){
+  ctx.fillStyle='#d94f5c';
+  ctx.strokeStyle='#8a2a35';
+  ctx.lineWidth=1;
+  const base=16, tip=SPIKE_H;
+  // 上边
+  for(let x=base; x+SPIKE_W<=W-base; x+=SPIKE_W){
+    ctx.beginPath();
+    ctx.moveTo(x,base);
+    ctx.lineTo(x+SPIKE_W,base);
+    ctx.lineTo(x+SPIKE_W/2, base+tip);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+  // 下边
+  for(let x=base; x+SPIKE_W<=W-base; x+=SPIKE_W){
+    ctx.beginPath();
+    ctx.moveTo(x,H-base);
+    ctx.lineTo(x+SPIKE_W,H-base);
+    ctx.lineTo(x+SPIKE_W/2, H-base-tip);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+  // 左边
+  for(let y=base; y+SPIKE_W<=H-base; y+=SPIKE_W){
+    ctx.beginPath();
+    ctx.moveTo(base,y);
+    ctx.lineTo(base,y+SPIKE_W);
+    ctx.lineTo(base+tip, y+SPIKE_W/2);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+  // 右边
+  for(let y=base; y+SPIKE_W<=H-base; y+=SPIKE_W){
+    ctx.beginPath();
+    ctx.moveTo(W-base,y);
+    ctx.lineTo(W-base,y+SPIKE_W);
+    ctx.lineTo(W-base-tip, y+SPIKE_W/2);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+}
+
+function setPointer(clientX,clientY){
+  const r=c.getBoundingClientRect();
+  mx=(clientX-r.left)*W/r.width;
+  my=(clientY-r.top)*H/r.height;
+}
+c.addEventListener('mousemove',e=>setPointer(e.clientX,e.clientY));
+// 鼠标离开画布：保留最后位置（不再回中心）
+c.addEventListener('touchmove',e=>{
+  if(e.touches[0]){setPointer(e.touches[0].clientX,e.touches[0].clientY); e.preventDefault();}
+},{passive:false});
+
+document.getElementById('next').onclick=()=>{
+  if(lv+1>=LV_MAX){
+    // 通关 → 整体重开
+    document.getElementById('winh').textContent='🎊 全部通关';
+    document.getElementById('wintxt').textContent=`本轮共收集 ${score} 颗星`;
+    const btn=document.getElementById('next');
+    btn.textContent='重新开始';
+    btn.onclick=()=>location.reload();
+    return;
+  }
+  load(lv+1);
+};
+document.getElementById('replay').onclick=()=>{lives=3;score=0;
+  document.getElementById('stars').textContent=0;load(lv);};
+document.getElementById('retry').onclick=()=>{lives=3;score=0;
+  document.getElementById('stars').textContent=0;load(lv);};
+
+function show(id){document.getElementById(id).classList.add('on')}
+function hide(){
+  document.getElementById('win').classList.remove('on');
+  document.getElementById('fail').classList.remove('on');
+}
+
+load(0);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
