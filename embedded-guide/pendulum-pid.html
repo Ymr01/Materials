@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>倒立摆 PID 可视化</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#0f1419;color:#e6e6e6;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:24px 16px}
+  h1{font-size:22px;margin:0 0 6px}
+  .sub{color:#8a94a6;font-size:14px;max-width:780px;line-height:1.7;margin-bottom:18px;text-align:center}
+  .sub b{color:#cdd5e0;font-weight:600}
+  .stage{background:#1a212b;border-radius:14px;padding:18px;box-shadow:0 10px 36px rgba(0,0,0,.45);width:100%;max-width:800px}
+  canvas{display:block;border-radius:10px;background:#0c1118;width:100%}
+  #chart{margin-top:12px}
+  .panel{display:flex;gap:26px;margin-top:18px;flex-wrap:wrap}
+  .controls{flex:1;min-width:300px}
+  .row{margin-bottom:16px}
+  .row label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px;color:#cdd5e0}
+  .row label b{font-variant-numeric:tabular-nums}
+  .row .hint{color:#6b7585;font-size:11px;margin-top:4px}
+  input[type=range]{width:100%}
+  #kp{accent-color:#4fc3f7}#ki{accent-color:#9ccc65}#kd{accent-color:#ffb74d}
+  .btns{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap}
+  button{flex:1;min-width:84px;padding:10px;border:none;border-radius:8px;background:#2a3340;color:#e6e6e6;font-size:13px;cursor:pointer;transition:background .15s}
+  button:hover{background:#36424f}
+  button.primary{background:#4fc3f7;color:#0c1118;font-weight:600}
+  button.primary:hover{background:#6fd0fb}
+  .chk{display:flex;align-items:center;gap:8px;font-size:13px;color:#cdd5e0;margin-top:10px;cursor:pointer}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:13px;min-width:230px;align-content:start}
+  .stats div{display:flex;justify-content:space-between;padding:7px 11px;background:#131a23;border-radius:6px}
+  .stats span{color:#8a94a6}
+  .stats b{font-variant-numeric:tabular-nums}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:800px;margin-top:22px}
+  .card{background:#1a212b;border-radius:12px;padding:16px;border-top:3px solid}
+  .card h3{margin:0 0 8px;font-size:15px}
+  .card p{margin:0 0 10px;font-size:13px;line-height:1.65;color:#b9c2cf}
+  .card .eff{font-size:12px;color:#8a94a6;line-height:1.7}
+  .card .eff b{color:#cdd5e0}
+  .card .try{margin-top:10px;font-size:12px;color:#cdd5e0;background:#131a23;padding:9px 11px;border-radius:6px;line-height:1.6}
+  .cP{border-color:#4fc3f7}.cP h3{color:#4fc3f7}
+  .cI{border-color:#9ccc65}.cI h3{color:#9ccc65}
+  .cD{border-color:#ffb74d}.cD h3{color:#ffb74d}
+  @media(max-width:720px){.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>倒立摆 PID 可视化</h1>
+<div class="sub">
+  小车上立着一根杆，控制器靠左右移动小车把杆稳在竖直。PID 把"杆有多歪"这个误差，
+  分成 <b style="color:#4fc3f7">P 现在的偏差</b>、<b style="color:#9ccc65">I 累积的偏差</b>、
+  <b style="color:#ffb74d">D 偏差变化的快慢</b> 三路，各乘一个增益，加起来就是推小车的力。
+  画面顶部那条 <b>力条</b> 实时显示三项各出了多少力。
+</div>
+
+<div class="stage">
+  <canvas id="cv" width="800" height="380"></canvas>
+  <canvas id="chart" width="800" height="120"></canvas>
+  <div class="panel">
+    <div class="controls">
+      <div class="row">
+        <label>Kp · 比例增益 <b id="vKp" style="color:#4fc3f7">0</b></label>
+        <input type="range" id="kp" min="0" max="300" step="1" value="90">
+        <div class="hint">杆越歪、当前出力越大。是把杆扶回来的主力。</div>
+      </div>
+      <div class="row">
+        <label>Ki · 积分增益 <b id="vKi" style="color:#9ccc65">0</b></label>
+        <input type="range" id="ki" min="0" max="60" step="0.5" value="0">
+        <div class="hint">消除长期残留的小偏差，但太大会拖累系统、引起振荡。</div>
+      </div>
+      <div class="row">
+        <label>Kd · 微分增益 <b id="vKd" style="color:#ffb74d">0</b></label>
+        <input type="range" id="kd" min="0" max="60" step="0.5" value="16">
+        <div class="hint">预判趋势、提前刹车，相当于阻尼，专门压振荡。</div>
+      </div>
+      <div class="btns">
+        <button class="primary" id="reset">重置</button>
+        <button id="kick">扰动</button>
+        <button id="pause">暂停</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="showForce" checked> 显示三项力条与曲线</label>
+    </div>
+    <div class="stats">
+      <div><span>杆角度</span><b id="sAng">0°</b></div>
+      <div><span>小车位置</span><b id="sPos">0</b></div>
+      <div><span style="color:#4fc3f7">P 出力</span><b id="sP">0</b></div>
+      <div><span style="color:#9ccc65">I 出力</span><b id="sI">0</b></div>
+      <div><span style="color:#ffb74d">D 出力</span><b id="sD">0</b></div>
+      <div><span>合力 u</span><b id="sU">0</b></div>
+    </div>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card cP">
+    <h3>P　比例</h3>
+    <p>看<b>现在</b>杆歪了多少，按比例反推一个力。歪得多就推得猛，歪得少就推得轻。</p>
+    <div class="eff">
+      <b>调大：</b>反应更快、扶得更狠，但容易冲过头来回振荡。<br>
+      <b>调小：</b>太软，杆还没扶正就软掉，甚至扶不住。<br>
+      <b>单独用：</b>永远在目标附近来回晃，停不下来。
+    </div>
+    <div class="try">试试：Ki=0、Kd=0，只留 Kp。看蓝色力条跟着角度同步变大变小，杆持续振荡。</div>
+  </div>
+  <div class="card cI">
+    <h3>I　积分</h3>
+    <p>把<b>过去</b>每一刻的偏差累加起来。再小的偏差只要一直存在，积分就越攒越大，逼着系统把它清零。</p>
+    <div class="eff">
+      <b>调大：</b>消除残留静差更快，但积分"攒过头"会让系统过冲、甚至发散。<br>
+      <b>调小/为零：</b>响应干脆，但可能留一点点压不掉的偏差。<br>
+      <b>特点：</b>有滞后，是三项里最容易把稳定系统调炸的。
+    </div>
+    <div class="try">试试：稳定后把 Ki 从 0 慢慢拉大，看绿色力条缓缓累积、小车被推着平移。</div>
+  </div>
+  <div class="card cD">
+    <h3>D　微分</h3>
+    <p>看偏差<b>变化的快慢</b>（杆正在往哪边、多快地倒）。倒得越急，越早出反向力刹车。</p>
+    <div class="eff">
+      <b>调大：</b>阻尼强、振荡被快速压住，但对噪声敏感，太大反而抖。<br>
+      <b>调小/为零：</b>没有刹车，P 一发力就冲过头，来回荡。<br>
+      <b>作用：</b>提供阻尼，让杆"软着陆"回竖直而不是猛烈反弹。
+    </div>
+    <div class="try">试试：先 Kd=0 让它振荡，再把 Kd 拉到 20+，看橙色力条在杆快速运动时猛地反向，振荡几下就停。</div>
+  </div>
+</div>
+
+<script>
+<!--JS-->
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const chart=document.getElementById('chart'),cc=chart.getContext('2d');
+const W=cv.width,H=cv.height,CW=chart.width,CH=chart.height;
+
+// ---- 状态 ----
+// theta: 杆与竖直夹角(rad)，0=竖直向上，正=向右倒；omega: 角速度
+// x: 小车位置(m)；v: 小车速度
+let st;
+function reset(){
+  st={theta:0.18,omega:0,x:0,v:0,integ:0,prevErr:0,
+      P:0,I:0,D:0,u:0};
+  hist.length=0;
+}
+
+// ---- 物理参数 ----
+const g=9.81,L=1.0,dt=0.02,cartMass=1.0;
+let gains={kp:90,ki:0,kd:16};
+let running=true;
+
+function step(){
+  // 误差：希望 theta=0。杆向右倒(theta>0) => err<0 => u<0 => 小车向右去接住它。
+  const err=st.theta;              // 直接用角度作误差，符号已对：右倒就向右推
+  st.integ+=err*dt;
+  st.integ=Math.max(-3,Math.min(3,st.integ)); // 抗积分饱和
+  const deriv=(err-st.prevErr)/dt;
+  st.prevErr=err;
+
+  st.P=gains.kp*err;
+  st.I=gains.ki*st.integ;
+  st.D=gains.kd*deriv;
+  let u=st.P+st.I+st.D;
+  u=Math.max(-80,Math.min(80,u));  // 执行器限幅
+  st.u=u;
+
+  // u 是作用在小车上的力（正=向右）。杆向右倒时 err>0 => u>0 => 小车右移接住 ✓
+  const cartAcc=u/cartMass;
+  // 杆角加速度：重力使其继续倒(+sin)，小车加速产生惯性反作用(-cos)
+  const angAcc=(g*Math.sin(st.theta)-cartAcc*Math.cos(st.theta))/L;
+  st.omega+=angAcc*dt;
+  st.theta+=st.omega*dt;
+  st.v+=cartAcc*dt;
+  st.v*=0.995;                     // 小车阻尼，避免无限漂
+  st.x+=st.v*dt;
+
+  const lim=2.6;
+  if(st.x<-lim){st.x=-lim;st.v=0;}
+  if(st.x> lim){st.x= lim;st.v=0;}
+
+  // 记录历史用于曲线
+  hist.push({t:st.theta,P:st.P,I:st.I,D:st.D});
+  if(hist.length>CW) hist.shift();
+}
+const hist=[];
+reset();
+
+// ---- 绘制倒立摆 ----
+const PX=120,groundY=H-70;
+let showForce=true;
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2+st.x*PX;
+
+  // 顶部力条
+  if(showForce) drawForceBar();
+
+  // 轨道
+  ctx.strokeStyle='#2a3340';ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(40,groundY);ctx.lineTo(W-40,groundY);ctx.stroke();
+  // 目标竖直参考线
+  ctx.strokeStyle='rgba(79,195,247,.18)';ctx.lineWidth=2;ctx.setLineDash([6,6]);
+  ctx.beginPath();ctx.moveTo(cx,groundY);ctx.lineTo(cx,groundY-L*PX-34);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 小车
+  const cw=72,ch=34;
+  ctx.fillStyle='#3a4655';ctx.fillRect(cx-cw/2,groundY-ch,cw,ch);
+  ctx.fillStyle='#1a212b';
+  ctx.beginPath();ctx.arc(cx-21,groundY,8,0,7);ctx.fill();
+  ctx.beginPath();ctx.arc(cx+21,groundY,8,0,7);ctx.fill();
+
+  // 合力 u 的箭头（画在小车上）
+  if(showForce&&Math.abs(st.u)>1){
+    const ax=cx,ay=groundY-ch/2,len=st.u*1.4;
+    ctx.strokeStyle='#e6e6e6';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax+len,ay);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ax+len,ay);
+    ctx.lineTo(ax+len-Math.sign(len)*8,ay-5);
+    ctx.lineTo(ax+len-Math.sign(len)*8,ay+5);ctx.closePath();ctx.fill();
+  }
+
+  // 杆
+  const pivotY=groundY-ch;
+  const ex=cx+Math.sin(st.theta)*L*PX, ey=pivotY-Math.cos(st.theta)*L*PX;
+  const lean=Math.min(1,Math.abs(st.theta)/0.5);
+  ctx.strokeStyle=`rgb(${79+lean*150},${195-lean*120},${247-lean*180})`;
+  ctx.lineWidth=8;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(cx,pivotY);ctx.lineTo(ex,ey);ctx.stroke();
+  ctx.fillStyle='#e6e6e6';ctx.beginPath();ctx.arc(ex,ey,12,0,7);ctx.fill();
+  ctx.fillStyle='#4fc3f7';ctx.beginPath();ctx.arc(cx,pivotY,5,0,7);ctx.fill();
+}
+
+// 顶部三段力条：P蓝 I绿 D橙，从中线向左右伸
+function drawForceBar(){
+  const midY=26,cxBar=W/2,scale=1.3;
+  ctx.fillStyle='#6b7585';ctx.font='11px sans-serif';ctx.textAlign='center';
+  ctx.fillText('← 推小车向左         三项出力（合成推小车的力）         向右推 →',cxBar,12);
+  ctx.strokeStyle='#2a3340';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(cxBar,midY-8);ctx.lineTo(cxBar,midY+24);ctx.stroke();
+  const segs=[['#4fc3f7',st.P],['#9ccc65',st.I],['#ffb74d',st.D]];
+  let off=0;
+  segs.forEach(([col,val])=>{
+    const w=val*scale;
+    ctx.fillStyle=col;
+    ctx.fillRect(cxBar+Math.min(off,off+w),midY+(off===0?0:0),Math.abs(w),12);
+    // 顺序堆叠：从中线起每段接着上一段末端
+    off+=w;
+  });
+  ctx.textAlign='left';
+}
+
+// ---- 绘制曲线 ----
+function drawChart(){
+  cc.clearRect(0,0,CW,CH);
+  cc.fillStyle='#0c1118';cc.fillRect(0,0,CW,CH);
+  const mid=CH/2;
+  cc.strokeStyle='#1f2733';cc.lineWidth=1;
+  cc.beginPath();cc.moveTo(0,mid);cc.lineTo(CW,mid);cc.stroke();
+  cc.fillStyle='#6b7585';cc.font='10px sans-serif';
+  cc.fillText('角度(白) / P(蓝) I(绿) D(橙) 随时间',8,12);
+  if(!showForce||hist.length<2)return;
+  const line=(key,col,sc)=>{
+    cc.strokeStyle=col;cc.lineWidth=1.5;cc.beginPath();
+    hist.forEach((h,i)=>{
+      const y=mid-(h[key]||0)*sc;
+      i?cc.lineTo(i,y):cc.moveTo(i,y);
+    });
+    cc.stroke();
+  };
+  line('P','#4fc3f7',0.7);
+  line('I','#9ccc65',0.7);
+  line('D','#ffb74d',0.7);
+  line('t','#e6e6e6',120); // 角度放大显示
+}
+
+// ---- 主循环 ----
+function loop(){
+  if(running)step();
+  draw();drawChart();
+  document.getElementById('sAng').textContent=(st.theta*180/Math.PI).toFixed(1)+'°';
+  document.getElementById('sPos').textContent=st.x.toFixed(2)+' m';
+  document.getElementById('sP').textContent=st.P.toFixed(1);
+  document.getElementById('sI').textContent=st.I.toFixed(1);
+  document.getElementById('sD').textContent=st.D.toFixed(1);
+  document.getElementById('sU').textContent=st.u.toFixed(1);
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ---- 交互 ----
+function bind(id,key,label){
+  const el=document.getElementById(id),out=document.getElementById(label);
+  const sync=()=>{gains[key]=parseFloat(el.value);out.textContent=el.value;};
+  el.addEventListener('input',sync);sync();
+}
+bind('kp','kp','vKp');bind('ki','ki','vKi');bind('kd','kd','vKd');
+document.getElementById('reset').onclick=reset;
+document.getElementById('kick').onclick=()=>{st.omega+=(Math.random()>.5?1:-1)*2.2;};
+const pauseBtn=document.getElementById('pause');
+pauseBtn.onclick=()=>{running=!running;pauseBtn.textContent=running?'暂停':'继续';};
+document.getElementById('showForce').onchange=e=>{showForce=e.target.checked;};
+cv.onclick=e=>{const r=cv.getBoundingClientRect();
+  const side=((e.clientX-r.left)/r.width<0.5)?-1:1;st.omega+=side*1.6;};
+</script>
+</body>
+</html>
