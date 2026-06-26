@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高三导数专题 · 系统梳理</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$','$'],['\\(','\\)']],
+    displayMath: [['$$','$$'],['\\[','\\]']]
+  },
+  svg: { fontCache: 'global' },
+  startup: {
+    ready: () => {
+      MathJax.startup.defaultReady();
+      MathJax.startup.promise.then(() => {
+        document.getElementById('loading').style.display = 'none';
+      });
+    }
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+<!-- 备用 CDN，如果主 CDN 加载失败 -->
+<script>
+setTimeout(() => {
+  if (typeof MathJax === 'undefined' || !MathJax.typesetPromise) {
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/mathjax@3/es5/tex-svg.js';
+    document.head.appendChild(s);
+  }
+}, 3000);
+</script>
+<style>
+:root {
+  --bg: #fafaf7;
+  --panel: #ffffff;
+  --ink: #1a1a1a;
+  --muted: #666;
+  --accent: #c0392b;
+  --accent-soft: #fbeae5;
+  --green: #27ae60;
+  --blue: #2980b9;
+  --gold: #d4a017;
+  --border: #e0ddd6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.75;
+  font-size: 16px;
+}
+.layout { display: flex; max-width: 1400px; margin: 0 auto; }
+nav {
+  position: sticky; top: 0; align-self: flex-start;
+  width: 240px; height: 100vh; overflow-y: auto;
+  padding: 24px 16px; background: var(--panel);
+  border-right: 1px solid var(--border); flex-shrink: 0;
+}
+nav h2 { font-size: 16px; margin-bottom: 12px; color: var(--accent); }
+nav ol { list-style: none; counter-reset: chap; }
+nav li {
+  counter-increment: chap; padding: 6px 0;
+  font-size: 14px; cursor: pointer; color: var(--muted);
+  border-bottom: 1px dashed var(--border);
+}
+nav li::before { content: counter(chap, cjk-decimal) "、"; color: var(--accent); }
+nav li:hover { color: var(--accent); }
+nav a { color: inherit; text-decoration: none; display: block; }
+main { flex: 1; padding: 40px 60px; max-width: 960px; }
+header.top {
+  text-align: center; margin-bottom: 40px;
+  padding-bottom: 24px; border-bottom: 3px double var(--accent);
+}
+header.top h1 { font-size: 32px; color: var(--accent); margin-bottom: 8px; }
+header.top p { color: var(--muted); font-size: 14px; }
+section.chap {
+  margin-bottom: 48px; padding: 28px 32px;
+  background: var(--panel); border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-left: 4px solid var(--accent);
+}
+section.chap h2 {
+  font-size: 22px; color: var(--accent);
+  margin-bottom: 16px; padding-bottom: 8px;
+  border-bottom: 2px solid var(--accent-soft);
+}
+section.chap h3 {
+  font-size: 17px; color: var(--blue);
+  margin: 18px 0 8px; padding-left: 8px;
+  border-left: 3px solid var(--blue);
+}
+section.chap h4 { font-size: 15px; color: var(--green); margin: 12px 0 6px; }
+p, li { margin-bottom: 6px; }
+ul, ol { margin-left: 24px; margin-bottom: 10px; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; }
+th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+th { background: var(--accent-soft); color: var(--accent); }
+.box {
+  background: #fff8e7; border: 1px solid var(--gold);
+  border-left: 4px solid var(--gold); border-radius: 4px;
+  padding: 12px 16px; margin: 12px 0; font-size: 14px;
+}
+.box.warn {
+  background: #fdecea; border-color: var(--accent);
+}
+.box.tip {
+  background: #eaf4ec; border-color: var(--green);
+}
+.box-title {
+  font-weight: bold; margin-bottom: 6px;
+  color: var(--gold);
+}
+.box.warn .box-title { color: var(--accent); }
+.box.tip .box-title { color: var(--green); }
+.example {
+  margin: 20px 0; border: 2px solid var(--accent);
+  border-radius: 8px; overflow: hidden;
+}
+.example-header {
+  background: var(--accent); color: white;
+  padding: 8px 16px; font-weight: bold;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.example-body { padding: 16px 20px; background: #fff; }
+.example-question {
+  background: #fbeae5; padding: 12px 16px;
+  border-radius: 4px; margin-bottom: 12px;
+  font-weight: 500;
+}
+.tag {
+  display: inline-block; font-size: 11px;
+  padding: 2px 8px; border-radius: 10px;
+  background: rgba(255,255,255,0.25); margin-left: 8px;
+}
+details { margin-top: 8px; }
+summary {
+  cursor: pointer; padding: 6px 12px;
+  background: var(--accent-soft); border-radius: 4px;
+  font-weight: bold; color: var(--accent);
+  list-style: none;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "▶ "; transition: transform 0.2s; display: inline-block; }
+details[open] summary::before { content: "▼ "; }
+.solution { padding: 12px 4px; }
+.solution p { margin-bottom: 10px; }
+.step {
+  background: #f5f1e8; padding: 8px 12px;
+  border-radius: 4px; margin: 8px 0;
+  border-left: 3px solid var(--gold);
+}
+code { background: #f4f4f4; padding: 1px 6px; border-radius: 3px; font-size: 14px; }
+mjx-container { font-size: 1.05em !important; }
+mjx-container[display="true"] { margin: 12px 0 !important; }
+#loading {
+  position: fixed; top: 0; left: 0; width: 100%;
+  padding: 12px; background: #c0392b; color: white;
+  text-align: center; font-size: 14px; z-index: 9999;
+}
+@media (max-width: 900px) {
+  .layout { flex-direction: column; }
+  nav { position: static; width: 100%; height: auto; }
+  main { padding: 20px; }
+}
+</style>
+</head>
+<body>
+<div id="loading">⏳ 数学公式加载中…首次打开需联网加载 MathJax，请稍候 5~10 秒</div>
+<div class="layout">
+<nav>
+<h2>📖 章节导航</h2>
+<ol>
+<li><a href="#c1">导数概念与几何意义</a></li>
+<li><a href="#c2">导数计算</a></li>
+<li><a href="#c3">单调性</a></li>
+<li><a href="#c4">极值与最值</a></li>
+<li><a href="#c5">恒成立与能成立</a></li>
+<li><a href="#c6">零点问题</a></li>
+<li><a href="#c7">不等式证明</a></li>
+<li><a href="#c8">隐零点</a></li>
+<li><a href="#c9">双变量与极值点偏移</a></li>
+<li><a href="#c10">压轴综合题</a></li>
+</ol>
+</nav>
+<main>
+<header class="top">
+<h1>高三导数专题</h1>
+<p>系统梳理 · 经典例题 · 高考压轴攻略</p>
+</header>
+<!-- CONTENT_PLACEHOLDER -->
+
+<!-- ========== 第一章 ========== -->
+<section class="chap" id="c1">
+<h2>一、导数的概念与几何意义</h2>
+
+<h3>1. 导数定义</h3>
+<p>$$f'(x_0)=\lim_{\Delta x\to 0}\frac{f(x_0+\Delta x)-f(x_0)}{\Delta x}$$</p>
+
+<h3>2. 几何意义(核心)</h3>
+<p>$f'(x_0)$ 就是曲线 $y=f(x)$ 在点 $(x_0,f(x_0))$ 处<b>切线的斜率</b>。</p>
+<p>切线方程:$y-f(x_0)=f'(x_0)(x-x_0)$</p>
+
+<div class="box warn">
+<div class="box-title">⚠️ 极易错</div>
+<b>"在点 P 处的切线"</b> vs <b>"过点 P 的切线"</b>:
+<ul>
+<li><b>在点 P 处</b>:P 一定是切点,直接代入</li>
+<li><b>过点 P</b>:P 不一定是切点!需设切点 $(t,f(t))$,由 $\frac{f(t)-y_P}{t-x_P}=f'(t)$ 解 $t$,可能多解(多条切线)</li>
+</ul>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 1<span class="tag">过点切线 · 多解</span></div>
+<div class="example-body">
+<div class="example-question">
+已知函数 $f(x)=x^3-3x$,过点 $P(2,-2)$ 作曲线 $y=f(x)$ 的切线,求所有切线方程。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step">第 1 步:注意 P(2,-2) 是否在曲线上?$f(2)=8-6=2\neq -2$,所以 P 不在曲线上,需要"过点切线"做法。</div>
+<div class="step">第 2 步:设切点 $T(t,t^3-3t)$。$f'(x)=3x^2-3$,所以切线斜率 $k=3t^2-3$。</div>
+<div class="step">第 3 步:切线既过 T 也过 P,斜率两种算法相等:
+$$\frac{(t^3-3t)-(-2)}{t-2}=3t^2-3$$
+</div>
+<div class="step">第 4 步:化简
+$$t^3-3t+2=(3t^2-3)(t-2)$$
+$$t^3-3t+2=3t^3-6t^2-3t+6$$
+$$2t^3-6t^2+4=0$$
+$$t^3-3t^2+2=0$$
+</div>
+<div class="step">第 5 步:解方程。试根 $t=1$:$1-3+2=0$ ✓,所以 $(t-1)$ 是因式:
+$$t^3-3t^2+2=(t-1)(t^2-2t-2)=0$$
+解得 $t=1$ 或 $t=1\pm\sqrt{3}$。
+</div>
+<div class="step">第 6 步:三个切点,三条切线。
+<ul>
+<li>$t=1$:$k=0$,切线 $y=-2$</li>
+<li>$t=1+\sqrt 3$:$k=3(1+\sqrt 3)^2-3=6+6\sqrt 3$,切线 $y+2=(6+6\sqrt 3)(x-2)$</li>
+<li>$t=1-\sqrt 3$:$k=6-6\sqrt 3$,切线 $y+2=(6-6\sqrt 3)(x-2)$</li>
+</ul>
+</div>
+<p><b>关键:</b>三次曲线过外一点最多可作 <b>3 条</b> 切线,这是高考常考的"切线条数问题"。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 1-2<span class="tag">公切线 · 联立方程</span></div>
+<div class="example-body">
+<div class="example-question">
+若曲线 $C_1:y=\ln x$ 与曲线 $C_2:y=x^2+ax$ 有公切线 $l$，求实数 $a$ 的取值范围。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：在两曲线上分别设切点。</b>
+<br>设 $l$ 切 $C_1$ 于 $(s, \ln s)$，切 $C_2$ 于 $(t, t^2+at)$。
+<br>$y=\ln x$，$y'=\dfrac{1}{x}$；$y=x^2+ax$，$y'=2x+a$。
+</div>
+<div class="step"><b>第 2 步：列两组方程。</b>
+<ul>
+<li>切线斜率相等：$\dfrac{1}{s}=2t+a$</li>
+<li>切线既是 $C_1$ 上的切线，又过 $(t, t^2+at)$：
+$$t^2+at-\ln s=(2t+a)(t-s)$$
+</li>
+</ul>
+</div>
+<div class="step"><b>第 3 步：消元。</b>由斜率方程 $a=\dfrac{1}{s}-2t$，代入第二式：
+$$t^2+\left(\frac{1}{s}-2t\right)t-\ln s=\frac{1}{s}(t-s)$$
+$$t^2+\frac{t}{s}-2t^2-\ln s=\frac{t}{s}-1$$
+$$-t^2-\ln s=-1$$
+$$t^2=1-\ln s\quad (\star)$$
+<br>又 $a=\dfrac{1}{s}-2t$，所以 $a$ 由 $s,t$ 决定，关键是确定能取的 $a$ 值。
+</div>
+<div class="step"><b>第 4 步：参变法。</b>由 $(\star)$，$t^2\geq 0\Rightarrow \ln s\leq 1\Rightarrow 0<s\leq e$。
+<br>当 $s\in(0,e]$ 时，$t=\pm\sqrt{1-\ln s}$（两支），$a=\dfrac{1}{s}\mp 2\sqrt{1-\ln s}$。
+<br>记 $g(s)=\dfrac{1}{s}-2\sqrt{1-\ln s}$，$h(s)=\dfrac{1}{s}+2\sqrt{1-\ln s}$（$s\in(0,e]$）。
+$$g'(s)=-\frac{1}{s^2}-2\cdot\frac{-1/s}{2\sqrt{1-\ln s}}=-\frac{1}{s^2}+\frac{1}{s\sqrt{1-\ln s}}$$
+分析 $g$ 单调性较繁，<b>但端点和极限值就够卡范围</b>：
+<ul>
+<li>$s\to 0^+$：$g(s)\to+\infty-\infty$，需细算；$h(s)\to+\infty$</li>
+<li>$s=e$：$g(e)=\dfrac{1}{e}-0=\dfrac{1}{e}$；$h(e)=\dfrac{1}{e}$</li>
+<li>$s=1$：$g(1)=1-2=-1$；$h(1)=1+2=3$</li>
+</ul>
+</div>
+<div class="step"><b>结论：</b>$a$ 取遍 $g(s)$ 和 $h(s)$ 的所有值。经分析（$g$ 取得任意小，$h$ 取得任意大），$a\in\mathbb R$ 都成立。即<b>对任意 $a\in\mathbb R$，两曲线都存在公切线。</b>
+<br><b>关键：</b>公切线问题的标准套路是<b>在两曲线上分别设切点</b>，列出"斜率相等"+"切线方程一致"两组方程，再消元成关于一个参数的条件式。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 1-3<span class="tag">切线条数 · 数形结合</span></div>
+<div class="example-body">
+<div class="example-question">
+过点 $P(1,t)$ 作曲线 $y=x^3-3x$ 的切线，若可以作 3 条不同的切线，求 $t$ 的取值范围。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：设切点 $(x_0, x_0^3-3x_0)$。</b>$y'=3x^2-3$，切线斜率 $k=3x_0^2-3$。
+<br>切线过 $P(1,t)$：
+$$t-(x_0^3-3x_0)=(3x_0^2-3)(1-x_0)$$
+$$t=x_0^3-3x_0+(3x_0^2-3)(1-x_0)$$
+$$=x_0^3-3x_0+3x_0^2-3-3x_0^3+3x_0$$
+$$=-2x_0^3+3x_0^2-3$$
+</div>
+<div class="step"><b>第 2 步：</b>切线条数 = 方程 $t=-2x_0^3+3x_0^2-3$ 关于 $x_0$ 的解的个数。
+<br>令 $\varphi(x)=-2x^3+3x^2-3$：
+$$\varphi'(x)=-6x^2+6x=-6x(x-1)$$
+$\varphi'>0\Leftrightarrow 0<x<1$，$\varphi'<0\Leftrightarrow x<0$ 或 $x>1$。
+<br>$\varphi$ 在 $x=0$ 处极小，$\varphi(0)=-3$；在 $x=1$ 处极大，$\varphi(1)=-2+3-3=-2$。
+</div>
+<div class="step"><b>第 3 步：</b>边界 $\varphi(x)\to+\infty$ 当 $x\to-\infty$，$\varphi(x)\to-\infty$ 当 $x\to+\infty$。
+<br>水平线 $y=t$ 与 $\varphi$ 图像有 3 个交点 $\Leftrightarrow$ 极小值 $<t<$ 极大值：
+$$-3<t<-2$$
+</div>
+<p><b>关键：</b>"过定点作几条切线"问题，本质是把切点 $x_0$ 当成变量，建立 $t=\varphi(x_0)$，转化为<b>水平线 $y=t$ 与 $\varphi$ 图像交点数</b>。三次曲线最多 3 条切线，临界值就是 $\varphi$ 的极值。</p>
+</div>
+</details>
+</div>
+</div>
+</section>
+<section class="chap" id="c2">
+<h2>二、导数的计算</h2>
+
+<h3>1. 基本求导公式(必背)</h3>
+<table>
+<tr><th>函数</th><th>导数</th><th>函数</th><th>导数</th></tr>
+<tr><td>$C$(常数)</td><td>$0$</td><td>$x^n$</td><td>$nx^{n-1}$</td></tr>
+<tr><td>$\sin x$</td><td>$\cos x$</td><td>$\cos x$</td><td>$-\sin x$</td></tr>
+<tr><td>$a^x$</td><td>$a^x\ln a$</td><td>$e^x$</td><td>$e^x$</td></tr>
+<tr><td>$\log_a x$</td><td>$\frac{1}{x\ln a}$</td><td>$\ln x$</td><td>$\frac{1}{x}$</td></tr>
+</table>
+
+<h3>2. 四则运算法则</h3>
+<ul>
+<li>$(u\pm v)'=u'\pm v'$</li>
+<li>$(uv)'=u'v+uv'$ &nbsp;&nbsp; <b>易错:</b>不是 $u'v'$</li>
+<li>$\left(\frac{u}{v}\right)'=\frac{u'v-uv'}{v^2}$</li>
+</ul>
+
+<h3>3. 复合函数求导(链式法则)</h3>
+<p>$y=f(g(x))\Rightarrow y'=f'(g(x))\cdot g'(x)$</p>
+<ul>
+<li>例:$[e^{2x}]'=e^{2x}\cdot 2=2e^{2x}$</li>
+<li>例:$[\ln(2x+1)]'=\frac{2}{2x+1}$(漏内层导是大坑)</li>
+</ul>
+
+<div class="example">
+<div class="example-header">📝 经典例题 2<span class="tag">复杂求导 · 商法则+链式</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=\dfrac{\ln(2x+1)}{x^2+1}$,求 $f'(0)$。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step">第 1 步:这是商法则,$u=\ln(2x+1)$,$v=x^2+1$。
+$$u'=\frac{2}{2x+1},\quad v'=2x$$
+</div>
+<div class="step">第 2 步:套商法则
+$$f'(x)=\frac{u'v-uv'}{v^2}=\frac{\frac{2}{2x+1}\cdot(x^2+1)-\ln(2x+1)\cdot 2x}{(x^2+1)^2}$$
+</div>
+<div class="step">第 3 步:代入 $x=0$
+$$f'(0)=\frac{\frac{2}{1}\cdot 1-\ln 1\cdot 0}{1}=\frac{2-0}{1}=2$$
+</div>
+<p><b>关键:</b>$\ln 1=0$ 这个值代入后简化巨大。求 $f'(x_0)$ 时,若 $x_0$ 的代入值很简单,可以先代再算,减少错误。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 2-2<span class="tag">参数方程的导数 · 含变限积分</span></div>
+<div class="example-body">
+<div class="example-question">
+已知 $f(x)=e^{2x}\sin(3x+1)$，求 $f'(x)$，并求 $f'(0)$。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：识别结构。</b>$f$ 是两个函数的<b>乘积</b>：
+<br>$u(x)=e^{2x}$，$v(x)=\sin(3x+1)$
+<br>$u'(x)=e^{2x}\cdot 2=2e^{2x}$（链式法则，外层 $e$，内层 $2x$）
+<br>$v'(x)=\cos(3x+1)\cdot 3=3\cos(3x+1)$（链式法则）
+</div>
+<div class="step"><b>第 2 步：套乘积法则。</b>
+$$f'(x)=u'v+uv'=2e^{2x}\sin(3x+1)+e^{2x}\cdot 3\cos(3x+1)$$
+$$=e^{2x}[2\sin(3x+1)+3\cos(3x+1)]$$
+</div>
+<div class="step"><b>第 3 步：代 $x=0$。</b>
+$$f'(0)=e^0[2\sin 1+3\cos 1]=2\sin 1+3\cos 1$$
+</div>
+<p><b>关键：</b>这种题考三件事——<b>乘积法则</b>、<b>链式法则两次</b>（外层 $e^?$、$\sin ?$ 都要乘内层导数）、<b>统一提公因式</b>简化书写。$e^{2x}$ 提出来后表达式干净，扣分点少。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 2-3<span class="tag">含参导数 · 隐式条件</span></div>
+<div class="example-body">
+<div class="example-question">
+已知函数 $f(x)=ax+\dfrac{b}{x}$ 在 $x=1$ 处的切线方程是 $y=2x-1$，求 $a,b$。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：理解切线条件。</b>切线 $y=2x-1$ 切于 $(1, f(1))$。
+<ul>
+<li>切线过切点：$f(1)=2\cdot 1-1=1$</li>
+<li>切线斜率 = 导数值：$f'(1)=2$</li>
+</ul>
+</div>
+<div class="step"><b>第 2 步：算 $f(1)$ 和 $f'(1)$。</b>
+$$f(x)=ax+\frac{b}{x},\quad f'(x)=a-\frac{b}{x^2}$$
+$$f(1)=a+b=1,\quad f'(1)=a-b=2$$
+</div>
+<div class="step"><b>第 3 步：解方程组。</b>
+$$\begin{cases}a+b=1\\ a-b=2\end{cases}\Rightarrow a=\frac{3}{2},\ b=-\frac{1}{2}$$
+</div>
+<p><b>关键：</b>切线 $y=kx+m$ 提供<b>两个条件</b>——"过切点"和"斜率"，可解两个未知量。注意"切线方程过切点"≠"切点在切线方程上"（其实是一回事，但很多学生只用斜率条件，漏代纵坐标条件，丢一半分）。</p>
+</div>
+</details>
+</div>
+</div>
+</section>
+
+<!-- ========== 第三章 ========== -->
+<section class="chap" id="c3">
+<h2>三、单调性(基础也高频)</h2>
+
+<h3>核心结论</h3>
+<ul>
+<li>$f'(x)>0$ 在区间 $I$ 上 $\Rightarrow$ $f$ 在 $I$ 上递增</li>
+<li>$f'(x)<0$ 在区间 $I$ 上 $\Rightarrow$ $f$ 在 $I$ 上递减</li>
+<li>反之:$f$ 在 $I$ 上递增 $\Rightarrow$ $f'(x)\geq 0$(可以等于 0,但不能恒为 0)</li>
+</ul>
+
+<h3>解题步骤</h3>
+<ol>
+<li><b>求定义域</b>(必写!特别是 $\ln x,\sqrt x,\frac{1}{x}$)</li>
+<li>求 $f'(x)$,通分整理成<b>因式连乘</b>形式</li>
+<li>解 $f'(x)=0$,画符号表</li>
+<li>写出单调区间(<b>不能用并集 ∪</b>,要分开写)</li>
+</ol>
+
+<h3>含参讨论 3 类</h3>
+<table>
+<tr><th>类型</th><th>处理思路</th></tr>
+<tr><td>$f'$ 含参一次式</td><td>看参数符号,讨论零点位置</td></tr>
+<tr><td>$f'$ 含参二次式</td><td>看 $a$ 正负 $\to$ 判别式 $\Delta$ $\to$ 比较零点</td></tr>
+<tr><td>$f'$ 是含参一次式 × 固定因式 / $x$</td><td>抽出恒正/恒负的因子</td></tr>
+</table>
+
+<div class="example">
+<div class="example-header">📝 经典例题 3<span class="tag">含参讨论 · 二次型</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=\ln x-\frac{1}{2}ax^2-2x$($a\in\mathbb R$),讨论 $f(x)$ 的单调性。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step">定义域:$(0,+\infty)$。求导:
+$$f'(x)=\frac{1}{x}-ax-2=\frac{1-ax^2-2x}{x}=\frac{-(ax^2+2x-1)}{x}$$
+</div>
+<div class="step">设 $g(x)=ax^2+2x-1$,因为 $x>0$,所以 $f'(x)$ 的符号由 $-g(x)$ 决定。</div>
+<div class="step"><b>情况 1:$a=0$</b>
+$$g(x)=2x-1,\ g(x)>0\Leftrightarrow x>\frac{1}{2}$$
+所以 $f'(x)>0\Leftrightarrow x<\frac{1}{2}$,$f$ 在 $(0,\frac{1}{2})$ 递增,$(\frac{1}{2},+\infty)$ 递减。
+</div>
+<div class="step"><b>情况 2:$a>0$</b>(抛物线开口向上)
+$$\Delta=4+4a>0$$
+$g(x)=0$ 两根:$x=\frac{-2\pm\sqrt{4+4a}}{2a}=\frac{-1\pm\sqrt{1+a}}{a}$
+<br>正根为 $x_0=\frac{-1+\sqrt{1+a}}{a}$,负根舍去。
+<br>所以 $g(x)<0\Leftrightarrow 0<x<x_0$,$f'(x)>0\Leftrightarrow 0<x<x_0$。
+<br>$f$ 在 $(0,x_0)$ 递增,在 $(x_0,+\infty)$ 递减。
+</div>
+<div class="step"><b>情况 3:$a<0$</b>(抛物线开口向下)
+<br>$g(x)=ax^2+2x-1$,在 $x=0$ 处 $g(0)=-1<0$;
+<br>$g(x)=0$ 的判别式 $\Delta=4+4a$
+<ul>
+<li>若 $\Delta\leq 0$ 即 $a\leq -1$:$g(x)\leq 0$ 恒成立 $\Rightarrow$ $f'(x)\geq 0$ 恒成立 $\Rightarrow$ $f$ 在 $(0,+\infty)$ 递增</li>
+<li>若 $-1<a<0$:$g(x)=0$ 有两正根 $x_1<x_2=\frac{-1-\sqrt{1+a}}{a}$(开口向下,两根都正)
+<br>$g(x)<0\Leftrightarrow x<x_1$ 或 $x>x_2$
+<br>$f'(x)>0\Leftrightarrow 0<x<x_1$ 或 $x>x_2$
+<br>$f$ 在 $(0,x_1)$ 和 $(x_2,+\infty)$ 递增,在 $(x_1,x_2)$ 递减
+</li>
+</ul>
+</div>
+<p><b>关键:</b>含二次参数时,$a$ 的<b>正/零/负</b>三种情况都要讨论。负的情况下,还要按判别式 $\Delta$ 是否大于 0 进一步分。漏 $a=-1$ 临界值会失分。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 3-2<span class="tag">判别式分类 · 二次型典型</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=\dfrac{1}{3}x^3-\dfrac{a}{2}x^2+x$（$a\in\mathbb R$），讨论 $f(x)$ 的单调性。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step">定义域 $\mathbb R$。
+$$f'(x)=x^2-ax+1$$
+这是关于 $x$ 的二次式，判别式 $\Delta=a^2-4$。
+</div>
+<div class="step"><b>情况 1：$\Delta\leq 0$，即 $-2\leq a\leq 2$。</b>
+<br>$f'(x)\geq 0$ 恒成立（开口向上，$\Delta\leq 0$），$f$ 在 $\mathbb R$ 单调递增。
+</div>
+<div class="step"><b>情况 2：$\Delta>0$，即 $a<-2$ 或 $a>2$。</b>
+<br>$f'(x)=0$ 两根 $x_{1,2}=\dfrac{a\mp\sqrt{a^2-4}}{2}$，$x_1<x_2$。
+<br>$f'(x)>0\Leftrightarrow x<x_1$ 或 $x>x_2$；$f'(x)<0\Leftrightarrow x_1<x<x_2$。
+<br>$f$ 在 $(-\infty,x_1)$ 和 $(x_2,+\infty)$ 递增，在 $(x_1,x_2)$ 递减。
+</div>
+<div class="step"><b>综合：</b>
+<table>
+<tr><th>$a$ 的范围</th><th>单调性</th></tr>
+<tr><td>$-2\leq a\leq 2$</td><td>$\mathbb R$ 递增</td></tr>
+<tr><td>$a<-2$ 或 $a>2$</td><td>$(-\infty,x_1),(x_2,+\infty)$ 增；$(x_1,x_2)$ 减</td></tr>
+</table>
+</div>
+<p><b>关键：</b>二次型 $f'(x)=x^2+bx+c$ 的讨论核心是判别式 $\Delta$。$\Delta\leq 0$ 时整体不变号，$\Delta>0$ 时两根之间变号。<b>临界值 $\Delta=0$ 一定要单独写在 $\Delta\leq 0$ 里</b>（含 $\Delta=0$ 时 $f'(x)=(x-x_0)^2\geq 0$，仍单调）。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 3-3<span class="tag">抽象函数 · 不等式构造</span></div>
+<div class="example-body">
+<div class="example-question">
+设函数 $f(x)$ 在 $\mathbb R$ 上可导，且对任意 $x\in\mathbb R$ 有 $f'(x)>f(x)$。若 $f(0)=1$，求不等式 $f(x)>e^x$ 的解集。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：构造辅助函数。</b>看到 $f(x)>e^x$ 和条件 $f'>f$，自然想到<b>把 $e^x$ 除过去</b>：
+$$g(x)=\frac{f(x)}{e^x}$$
+$$g'(x)=\frac{f'(x)e^x-f(x)e^x}{e^{2x}}=\frac{f'(x)-f(x)}{e^x}>0$$
+所以 $g$ 在 $\mathbb R$ 上<b>严格递增</b>。
+</div>
+<div class="step"><b>第 2 步：利用 $f(0)=1$。</b>
+$$g(0)=\frac{f(0)}{e^0}=1$$
+要解 $f(x)>e^x$，即 $\dfrac{f(x)}{e^x}>1=g(0)$，即 $g(x)>g(0)$。
+</div>
+<div class="step"><b>第 3 步：用单调性。</b>$g$ 严格递增 $\Rightarrow g(x)>g(0)\Leftrightarrow x>0$。
+<br><b>解集：</b>$(0,+\infty)$
+</div>
+<p><b>关键：</b>抽象函数题的核心是<b>构造辅助函数让条件直接可用</b>。常见构造：
+<ul>
+<li>条件 $f'(x)>f(x)$ → 构造 $\dfrac{f(x)}{e^x}$</li>
+<li>条件 $f'(x)+f(x)>0$ → 构造 $f(x)\cdot e^x$</li>
+<li>条件 $xf'(x)+f(x)>0$ → 构造 $x\cdot f(x)$（导数为 $xf'+f$）</li>
+<li>条件 $xf'(x)-f(x)>0$ → 构造 $\dfrac{f(x)}{x}$（导数为 $\dfrac{xf'-f}{x^2}$）</li>
+</ul>
+口诀：<b>看到含 $f',f$ 的条件 → 凑成某个乘积或商的导数 → 用单调性</b>。</p>
+</div>
+</details>
+</div>
+</div>
+</section>
+
+<!-- C3_END -->
+
+<!-- ========== 第四章 ========== -->
+<section class="chap" id="c4">
+<h2>四、极值与最值</h2>
+
+<h3>极值</h3>
+<ul>
+<li><b>必要条件:</b>$f'(x_0)=0$(但 $f'(x_0)=0$ 不一定是极值点!反例 $f(x)=x^3$ 在 $x=0$ 处)</li>
+<li><b>充分条件:</b>$f'(x)$ 在 $x_0$ 两侧<b>变号</b>
+<ul><li>左正右负 $\Rightarrow$ 极大值</li><li>左负右正 $\Rightarrow$ 极小值</li></ul>
+</li>
+</ul>
+
+<h3>最值(闭区间)</h3>
+<ol>
+<li>求 $f'(x)=0$ 在区间内的根</li>
+<li>比较:所有极值点的 $f$ 值 + 端点 $f(a)$、$f(b)$</li>
+<li>最大的就是最大值,最小的就是最小值</li>
+</ol>
+
+<div class="box warn">
+<div class="box-title">⚠️ 概念别混</div>
+<ul>
+<li><b>极值点</b> 是 $x$ 坐标;<b>极值</b> 是 $y$ 坐标</li>
+<li><b>极值</b> 是局部的,<b>最值</b> 是整体的</li>
+<li>求出极值要写明"极大值/极小值",不写会扣分</li>
+</ul>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 4<span class="tag">含参极值 · 临界讨论</span></div>
+<div class="example-body">
+<div class="example-question">
+已知 $f(x)=x^3-3ax+2$,若 $f(x)$ 在区间 $[-1,1]$ 上的最大值为 $4$,求实数 $a$ 的所有可能值。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step">$f'(x)=3x^2-3a=3(x^2-a)$</div>
+<div class="step"><b>情况 1:$a\leq 0$</b>
+<br>$f'(x)\geq 0$ 恒成立,$f$ 在 $[-1,1]$ 递增,最大值在 $x=1$:
+$$f(1)=1-3a+2=3-3a=4\Rightarrow a=-\frac{1}{3}$$
+检查:$-\frac{1}{3}\leq 0$ ✓
+</div>
+<div class="step"><b>情况 2:$0<a<1$</b>
+<br>$f'(x)=0$ 得 $x=\pm\sqrt a$,且 $\sqrt a\in(0,1)$
+<br>$f$ 在 $(-1,-\sqrt a)$ 递增,$(-\sqrt a,\sqrt a)$ 递减,$(\sqrt a,1)$ 递增
+<br>最大值候选:$f(-\sqrt a)$ 或 $f(1)$
+<br>$f(-\sqrt a)=-a\sqrt a+3a\sqrt a+2=2a\sqrt a+2=2$ 当 $a\sqrt a=...$
+<br>令 $f(-\sqrt a)=4$:$2a\sqrt a+2=4\Rightarrow a\sqrt a=1\Rightarrow a^{3/2}=1\Rightarrow a=1$,不在 $(0,1)$,舍
+<br>令 $f(1)=4$:$3-3a=4\Rightarrow a=-\frac{1}{3}$,不在 $(0,1)$,舍
+</div>
+<div class="step"><b>情况 3:$a\geq 1$</b>
+<br>$\sqrt a\geq 1$,$f'(x)=3(x^2-a)\leq 0$ 在 $[-1,1]$ 上,$f$ 递减
+<br>最大值在 $x=-1$:
+$$f(-1)=-1+3a+2=1+3a=4\Rightarrow a=1$$
+检查:$a=1\geq 1$ ✓
+</div>
+<div class="step"><b>综合:</b>$a=-\dfrac{1}{3}$ 或 $a=1$</div>
+<p><b>关键:</b>对 $a$ 的范围讨论时,要把<b>极值点是否在区间内</b>作为分界。最后一定要回代验证 $a$ 是否在假设范围内。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 4-2<span class="tag">已知极值点反求参数</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=x^3+ax^2+bx+a^2$ 在 $x=1$ 处取得极值 $10$，求 $a,b$ 的值。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：两个条件。</b>
+<ul>
+<li>$x=1$ 是极值点 $\Rightarrow f'(1)=0$</li>
+<li>极值为 $10$ $\Rightarrow f(1)=10$</li>
+</ul>
+$$f'(x)=3x^2+2ax+b$$
+$$f'(1)=3+2a+b=0,\quad f(1)=1+a+b+a^2=10$$
+</div>
+<div class="step"><b>第 2 步：解方程组。</b>
+<br>从 $f'(1)=0$：$b=-2a-3$
+<br>代入 $f(1)=10$：$1+a+(-2a-3)+a^2=10\Rightarrow a^2-a-12=0$
+<br>$(a-4)(a+3)=0\Rightarrow a=4$ 或 $a=-3$
+</div>
+<div class="step"><b>第 3 步：验证（必做！）。</b>$f'(x)=3x^2+2ax+b$ 需在 $x=1$ 两侧变号。
+<br><b>情况 $a=4,b=-11$：</b>$f'(x)=3x^2+8x-11=(3x+11)(x-1)$
+<br>$f'$ 在 $x=1$ 左侧 $(3\cdot 1+11)(0^-)<0$，右侧 $>0$ ✓ 极小值
+<br><b>情况 $a=-3,b=3$：</b>$f'(x)=3x^2-6x+3=3(x-1)^2\geq 0$
+<br>$f'$ 在 $x=1$ 两侧<b>不变号</b>！$x=1$ 不是极值点，<b>舍去</b>。
+</div>
+<div class="step"><b>结论：</b>$a=4$，$b=-11$。</div>
+<p><b>关键：</b>由 $f'(x_0)=0$ 反求参数时，<b>必须验证两侧变号</b>。否则会得出 $f'(x)=3(x-1)^2$ 这种"假极值点"。这是高考反求参数题最常见的扣分点。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 4-3<span class="tag">实际应用 · 最优化建模</span></div>
+<div class="example-body">
+<div class="example-question">
+用一块边长为 $24$ cm 的正方形铁皮，从四角各剪去一个边长为 $x$ 的小正方形，然后折起做成一个无盖盒子。问 $x$ 取何值时，盒子容积最大？
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：建模。</b>盒子底面边长 $24-2x$，高 $x$，容积
+$$V(x)=(24-2x)^2\cdot x,\quad x\in\left(0,12\right)$$
+</div>
+<div class="step"><b>第 2 步：展开求导。</b>
+$$V(x)=4(12-x)^2\cdot x=4x(12-x)^2$$
+$$V'(x)=4[(12-x)^2+x\cdot 2(12-x)\cdot(-1)]=4(12-x)[(12-x)-2x]=4(12-x)(12-3x)$$
+</div>
+<div class="step"><b>第 3 步：解 $V'(x)=0$。</b>
+$$12-x=0\Rightarrow x=12（边界，舍）$$
+$$12-3x=0\Rightarrow x=4$$
+</div>
+<div class="step"><b>第 4 步：判断极值类型。</b>
+<ul>
+<li>$x\in(0,4)$：$12-x>0$，$12-3x>0$，$V'>0$，递增</li>
+<li>$x\in(4,12)$：$12-x>0$，$12-3x<0$，$V'<0$，递减</li>
+</ul>
+所以 $x=4$ 是<b>极大值点</b>，也是最大值点。
+$$V(4)=(24-8)^2\cdot 4=256\cdot 4=1024\text{ cm}^3$$
+</div>
+<div class="step"><b>结论：</b>$x=4$ cm 时，盒子容积最大，最大容积 $1024$ cm³。</div>
+<p><b>关键：</b>实际应用题三步走——<b>建模写函数</b>（含定义域）→<b>求导找极值</b>→<b>判断/验证极值类型</b>。注意定义域：剪去后必须保证底边为正，$24-2x>0$ 即 $x<12$。</p>
+</div>
+</details>
+</div>
+</div>
+</section>
+
+<!-- ========== 第五章 ========== -->
+<section class="chap" id="c5">
+<h2>五、恒成立与能成立</h2>
+
+<h3>核心转化</h3>
+<ul>
+<li><b>恒成立:</b>$f(x)\geq g(x)$ 在 $I$ 恒成立 $\Leftrightarrow [f(x)-g(x)]_{\min}\geq 0$</li>
+<li><b>能成立(存在):</b>$f(x)\geq g(x)$ 在 $I$ 存在 $\Leftrightarrow [f(x)-g(x)]_{\max}\geq 0$</li>
+</ul>
+
+<h3>参变分离法(首选)</h3>
+<p>把参数分到一侧,转化为<b>求另一侧函数的最值</b>。</p>
+
+<div class="box tip">
+<div class="box-title">💡 何时不能分离参数?</div>
+<ul>
+<li>分离后函数在端点处取不到最值(要算极限)</li>
+<li>分离后表达式太复杂、不可导</li>
+<li>参数与 $x$ 纠缠太紧(如 $e^{ax}+ax$)</li>
+</ul>
+此时用<b>直接讨论法</b>:把 $f-g$ 看成关于 $x$ 的函数 $h(x;a)$,对 $a$ 分类讨论 $h$ 的单调性。
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 5<span class="tag">参变分离 · 隐零点处理</span></div>
+<div class="example-body">
+<div class="example-question">
+若对任意 $x>0$,不等式 $e^x\geq ax+1$ 恒成立,求实数 $a$ 的取值范围。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>分离参数:</b>对 $x>0$,有 $a\leq \dfrac{e^x-1}{x}$</div>
+<div class="step">令 $g(x)=\dfrac{e^x-1}{x}$($x>0$),需 $a\leq g(x)_{\min}$
+$$g'(x)=\frac{e^x\cdot x-(e^x-1)\cdot 1}{x^2}=\frac{(x-1)e^x+1}{x^2}$$
+</div>
+<div class="step">令 $h(x)=(x-1)e^x+1$,$h'(x)=e^x+(x-1)e^x=xe^x>0$ 对 $x>0$
+<br>所以 $h$ 在 $(0,+\infty)$ 递增,$h(0)=-1+1=0$,所以 $h(x)>0$ 对 $x>0$
+<br>$\Rightarrow g'(x)>0$ 对 $x>0$,$g$ 在 $(0,+\infty)$ 递增
+</div>
+<div class="step">$g$ 递增,所以 $g(x)>\lim\limits_{x\to 0^+}g(x)$
+<br>用洛必达(或泰勒)验证极限:$\lim\limits_{x\to 0^+}\dfrac{e^x-1}{x}=1$
+<br>所以 $g(x)>1$ 对 $x>0$,即 $\inf g=1$ 但取不到
+</div>
+<div class="step"><b>所以</b> $a\leq 1$。当 $a=1$ 时,需要验证:即证 $e^x\geq x+1$,这是基本不等式,成立(等号在 $x=0$,但题目要 $x>0$ 严格成立,$x=0$ 不在范围内,所以 $a=1$ 也行)。
+<br><b>最终:</b> $a\leq 1$
+</div>
+<p><b>关键:</b>分离参数后,$g$ 单调但最值取不到时,要看极限。临界值要单独回代验证。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 5-2<span class="tag">直接讨论 · 不能分离</span></div>
+<div class="example-body">
+<div class="example-question">
+若对任意 $x>0$，不等式 $e^{ax}\geq 1+ax$ 恒成立，求 $a$ 的取值范围。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：尝试参变分离。</b>$e^{ax}-1\geq ax$，参数 $a$ 同时出现在 $e^{ax}$ 和 $ax$ 中，<b>无法分离</b>。
+</div>
+<div class="step"><b>第 2 步：换元简化。</b>令 $t=ax$。
+<ul>
+<li>当 $a>0$：$x>0\Rightarrow t>0$</li>
+<li>当 $a<0$：$x>0\Rightarrow t<0$</li>
+<li>当 $a=0$：$t=0$，原式 $1\geq 1$ ✓</li>
+</ul>
+不等式变成 $e^t\geq 1+t$。
+</div>
+<div class="step"><b>第 3 步：用经典放缩。</b>$e^t\geq 1+t$ 对<b>所有 $t\in\mathbb R$</b> 恒成立（必背切线放缩，等号 $t=0$）。
+<br>所以无论 $t>0$ 还是 $t<0$，不等式都成立。
+</div>
+<div class="step"><b>结论：</b>$a\in\mathbb R$（任意实数 $a$ 都满足）。</div>
+<p><b>关键：</b>不能分离时，<b>巧妙换元</b>常能转化为经典不等式。$e^t\geq t+1$ 这个不等式对全体实数成立，是它强大的地方。本题的"陷阱"在于学生看到含参不等式就想算最值，反而绕远路。</p>
+
+<div class="step" style="margin-top:16px"><b>对比变式（不能放缩成立）：</b>若 $e^{ax}\geq 1+x$ 对 $x>0$ 恒成立，求 $a$。
+<br>这里参数只在 $e^{ax}$ 中，可分离：$a\geq\dfrac{\ln(1+x)}{x}$
+<br>$g(x)=\dfrac{\ln(1+x)}{x}$，$x\to 0^+$ 极限为 $1$（最大），$x\to+\infty$ 趋 $0$。
+<br>所以 $a\geq 1$。
+</div>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 5-3<span class="tag">双变量恒成立 · 最值法</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=x^2+ax$，$g(x)=\ln x$。若存在 $x_1\in[1,2]$，对任意 $x_2\in[1,e]$，有 $f(x_1)\geq g(x_2)$ 成立，求实数 $a$ 的取值范围。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：解读量词。</b>"存在 $x_1$，对任意 $x_2$"等价于：
+$$f(x_1)\geq g(x_2)\text{ 对任意 }x_2\Leftrightarrow f(x_1)\geq \max_{x_2}g(x_2)$$
+$$\text{存在 }x_1\Leftrightarrow \max_{x_1}f(x_1)\geq \max_{x_2}g(x_2)$$
+所以：$[f(x)]_{\max,x\in[1,2]}\geq[g(x)]_{\max,x\in[1,e]}$
+</div>
+<div class="step"><b>第 2 步：算右边。</b>$g(x)=\ln x$ 在 $[1,e]$ 递增，$\max g=g(e)=1$。
+</div>
+<div class="step"><b>第 3 步：算左边——$f(x)=x^2+ax$ 在 $[1,2]$ 的最大值。</b>
+$$f'(x)=2x+a$$
+对称轴 $x=-\dfrac{a}{2}$。$f$ 是开口向上的抛物线，在 $[1,2]$ 上的最大值<b>必在端点取</b>（$f(1)$ 或 $f(2)$）。
+$$f(1)=1+a,\quad f(2)=4+2a$$
+$f(2)-f(1)=3+a$
+<ul>
+<li>$a\geq -3$：$f(2)\geq f(1)$，$\max f=f(2)=4+2a$</li>
+<li>$a<-3$：$\max f=f(1)=1+a$</li>
+</ul>
+</div>
+<div class="step"><b>第 4 步：列不等式。</b>
+<ul>
+<li>$a\geq -3$：$4+2a\geq 1\Rightarrow a\geq -\dfrac{3}{2}$</li>
+<li>$a<-3$：$1+a\geq 1\Rightarrow a\geq 0$，但 $a<-3$，矛盾，舍</li>
+</ul>
+所以 $a\geq -\dfrac{3}{2}$。
+</div>
+<p><b>关键：</b>双变量恒成立题的核心是<b>正确翻译量词</b>：
+<ul>
+<li>"对任意 $x_1$，对任意 $x_2$"：$f_{\min}\geq g_{\max}$（最严格）</li>
+<li>"对任意 $x_1$，存在 $x_2$"：$f_{\min}\geq g_{\min}$</li>
+<li>"存在 $x_1$，对任意 $x_2$"：$f_{\max}\geq g_{\max}$（本题）</li>
+<li>"存在 $x_1$，存在 $x_2$"：$f_{\max}\geq g_{\min}$（最宽松）</li>
+</ul>
+口诀：<b>"对任意"配最严苛的最值，"存在"配最宽松的最值</b>。</p>
+</div>
+</details>
+</div>
+</div>
+</section>
+
+<!-- C5_END -->
+
+<!-- ========== 第六章 ========== -->
+<section class="chap" id="c6">
+<h2>六、零点问题</h2>
+
+<h3>1. 零点存在性定理</h3>
+<p>若 $f$ 在 $[a,b]$ 连续,且 $f(a)\cdot f(b)<0$,则 $f$ 在 $(a,b)$ 内<b>至少有一个</b>零点。</p>
+
+<h3>2. 零点个数判断三步法</h3>
+<ol>
+<li>求单调性(找 $f'$ 的零点,分段)</li>
+<li>算关键点函数值(极值点、端点、特殊点)</li>
+<li>看极限/边界($x\to\pm\infty$ 时 $f$ 的趋势)</li>
+</ol>
+
+<h3>3. 数形结合</h3>
+<p>方程 $f(x)=a$ 的解 $\Leftrightarrow$ $y=f(x)$ 与 $y=a$ 的交点。画图最直观。</p>
+
+<div class="example">
+<div class="example-header">📝 经典例题 6<span class="tag">零点个数 · 含参讨论</span></div>
+<div class="example-body">
+<div class="example-question">
+已知 $f(x)=\dfrac{\ln x}{x}-a$,讨论 $f(x)$ 的零点个数。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step">定义域:$(0,+\infty)$。$f(x)=0\Leftrightarrow \dfrac{\ln x}{x}=a$</div>
+<div class="step">设 $g(x)=\dfrac{\ln x}{x}$,$g'(x)=\dfrac{1-\ln x}{x^2}$
+<ul>
+<li>$x\in(0,e)$:$g'>0$,$g$ 递增</li>
+<li>$x\in(e,+\infty)$:$g'<0$,$g$ 递减</li>
+</ul>
+极大值 $g(e)=\dfrac{1}{e}$</div>
+<div class="step">边界行为:
+<ul>
+<li>$x\to 0^+$:$\ln x\to-\infty$,$g(x)\to -\infty$</li>
+<li>$x\to+\infty$:$g(x)\to 0$(分子增长慢于分母)</li>
+<li>$g(1)=0$</li>
+</ul>
+图像形如:从 $-\infty$ 上升到极大值 $\dfrac{1}{e}$(在 $x=e$),再下降趋近 $0$。
+</div>
+<div class="step">用水平线 $y=a$ 与 $g(x)$ 求交点数:
+<table>
+<tr><th>$a$ 的范围</th><th>交点数</th><th>零点数</th></tr>
+<tr><td>$a>\dfrac{1}{e}$</td><td>$0$</td><td>$0$</td></tr>
+<tr><td>$a=\dfrac{1}{e}$</td><td>$1$(切于极大值)</td><td>$1$</td></tr>
+<tr><td>$0<a<\dfrac{1}{e}$</td><td>$2$</td><td>$2$</td></tr>
+<tr><td>$a\leq 0$</td><td>$1$</td><td>$1$</td></tr>
+</table>
+</div>
+<p><b>关键:</b>用极大值和极限把 $y=a$ 的位置分成几段,每段对应不同交点数。最易错是 $a\leq 0$ 这种:虽然 $g\to-\infty$ 像有多个交点,但实际 $g$ 在 $(0,e)$ 单增,$y=a<0$ 只与递增段相交 1 次,递减段 $g>0$ 不相交。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 6-2<span class="tag">零点存在区间 · 二分法估计</span></div>
+<div class="example-body">
+<div class="example-question">
+证明：方程 $\ln x=2-x$ 在区间 $(1,e)$ 内有且只有一个实数根。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：构造函数。</b>令 $f(x)=\ln x-(2-x)=\ln x+x-2$，定义域 $(0,+\infty)$。
+<br>方程 $\ln x=2-x$ 的根 = $f(x)=0$ 的根。
+</div>
+<div class="step"><b>第 2 步：证明单调性（保证根唯一）。</b>
+$$f'(x)=\frac{1}{x}+1>0\text{ 对 }x>0$$
+所以 $f$ 在 $(0,+\infty)$ <b>严格递增</b>，至多有一个零点。
+</div>
+<div class="step"><b>第 3 步：用零点存在定理证明有根。</b>
+<ul>
+<li>$f(1)=0+1-2=-1<0$</li>
+<li>$f(e)=1+e-2=e-1>0$（因 $e>2$）</li>
+</ul>
+$f$ 连续，$f(1)\cdot f(e)<0$，由零点存在定理，$(1,e)$ 内至少有一个零点。
+</div>
+<div class="step"><b>结论：</b>$f$ 严格递增（至多一个根）+ $(1,e)$ 内有根（至少一个根）$\Rightarrow$ $(1,e)$ 内<b>恰好有一个</b>根。证毕。</div>
+<p><b>关键：</b>证唯一零点的标准三步——
+<ol>
+<li>构造函数 $f(x)=$ 左边 - 右边</li>
+<li>证 $f$ 单调（保证<b>至多</b>一个根）</li>
+<li>用零点存在定理证存在（保证<b>至少</b>一个根）</li>
+</ol>
+"严格单调 + 存在性"=唯一性。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 6-3<span class="tag">复合零点 · 换元转化</span></div>
+<div class="example-body">
+<div class="example-question">
+已知 $f(x)=x^3-3x$。若关于 $x$ 的方程 $[f(x)]^2-a\cdot f(x)+a-2=0$ 恰有 6 个不同的实数根，求 $a$ 的取值范围。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：因式分解。</b>令 $u=f(x)$，方程变 $u^2-au+a-2=0$。
+<br>看作 $u$ 的二次方程：$\Delta=a^2-4(a-2)=a^2-4a+8=(a-2)^2+4>0$ 恒成立，<b>恒有 2 个不同实根</b>。
+<br>试根：$u=1$ 代入 $1-a+a-2=-1\neq 0$，不行。换思路：
+<br>$u^2-au+a-2=u^2-2-a(u-1)=(u-1)(u+1)\cdot \text{?}-a(u-1)$，凑不出。
+<br>用求根公式：$u=\dfrac{a\pm\sqrt{(a-2)^2+4}}{2}$，记两根 $u_1<u_2$。
+</div>
+<div class="step"><b>第 2 步：分析 $f(x)=x^3-3x$ 图像。</b>$f'(x)=3x^2-3=3(x-1)(x+1)$
+<ul>
+<li>$x<-1$：递增</li>
+<li>$-1<x<1$：递减</li>
+<li>$x>1$：递增</li>
+</ul>
+极大 $f(-1)=-1+3=2$；极小 $f(1)=1-3=-2$。$f\to\pm\infty$ 当 $x\to\pm\infty$。
+</div>
+<div class="step"><b>第 3 步：水平线 $y=c$ 与 $f$ 交点数。</b>
+<table>
+<tr><th>$c$ 范围</th><th>实根个数</th></tr>
+<tr><td>$c>2$ 或 $c<-2$</td><td>1</td></tr>
+<tr><td>$c=2$ 或 $c=-2$</td><td>2（切+穿）</td></tr>
+<tr><td>$-2<c<2$</td><td><b>3</b>（穿三次）</td></tr>
+</table>
+</div>
+<div class="step"><b>第 4 步：6 个根的条件。</b>要 $u=u_1$ 和 $u=u_2$ 各对应 3 个 $x$，即<b>两个 $u$ 都在 $(-2,2)$ 内</b>。
+$$-2<u_1<u_2<2$$
+由 $u_1+u_2=a$（韦达），$u_1\cdot u_2=a-2$，且 $u_1<u_2$：
+<ul>
+<li>$u_1>-2$ 且 $u_2<2$：等价于 $f(u_1)>0$ 且 $f(u_2)<0$，其中 $g(u)=u^2-au+a-2$，要求 $g(-2)>0$ 且 $g(2)>0$（两根都在 $(-2,2)$ 的充要条件）
+<br>注意还需对称轴 $\dfrac{a}{2}\in(-2,2)$，即 $-4<a<4$
+</li>
+</ul>
+<ul>
+<li>$g(-2)=4+2a+a-2=3a+2>0\Rightarrow a>-\dfrac{2}{3}$</li>
+<li>$g(2)=4-2a+a-2=2-a>0\Rightarrow a<2$</li>
+<li>$-4<a<4$</li>
+</ul>
+综合：$-\dfrac{2}{3}<a<2$。
+</div>
+<div class="step"><b>第 5 步：检验 $u_1\neq u_2$。</b>$\Delta=(a-2)^2+4>0$ 恒成立，所以两根总是不同。✓</div>
+<div class="step"><b>结论：</b>$a\in\left(-\dfrac{2}{3},2\right)$。</div>
+<p><b>关键：</b>"复合方程根个数"的核心三步：
+<ol>
+<li><b>因式分解或求根</b>含 $f(x)$ 的方程，转为 $u=u_1, u_2$</li>
+<li><b>分析 $f$ 图像</b>，确定每个 $u$ 对应几个 $x$</li>
+<li>用<b>韦达 + 二次函数性质</b>把 $u_1, u_2\in $ 某区间的条件转为 $a$ 的不等式</li>
+</ol>
+"两根都在 $(p,q)$ 内"的充要条件：$\Delta\geq 0$、$g(p)>0$、$g(q)>0$、对称轴 $\in(p,q)$。</p>
+</div>
+</details>
+</div>
+</div>
+</section>
+<section class="chap" id="c7">
+<h2>七、不等式证明</h2>
+
+<h3>必背切线放缩(核心工具)</h3>
+<table>
+<tr><th>不等式</th><th>等号条件</th><th>用途</th></tr>
+<tr><td>$e^x\geq x+1$</td><td>$x=0$</td><td>最常用</td></tr>
+<tr><td>$e^x\geq ex$</td><td>$x=1$</td><td>更强放缩</td></tr>
+<tr><td>$\ln x\leq x-1$</td><td>$x=1$</td><td>最常用</td></tr>
+<tr><td>$\ln x\geq 1-\dfrac{1}{x}$</td><td>$x=1$</td><td>下界</td></tr>
+<tr><td>$\ln x\leq \dfrac{x-1}{\sqrt x}$($x\geq 1$)</td><td>$x=1$</td><td>分式型</td></tr>
+<tr><td>$\sin x\leq x$($x\geq 0$)</td><td>$x=0$</td><td>三角型</td></tr>
+</table>
+
+<div class="box tip">
+<div class="box-title">💡 常用变形</div>
+<ul>
+<li>$e^x\geq x+1\Rightarrow e^{x-1}\geq x\Rightarrow x\geq \ln x+1$(即 $x-1\geq \ln x$)</li>
+<li>替换 $x\to x+1$:$\ln(x+1)\leq x$</li>
+<li>同构变形:$x\cdot e^x=e^{x+\ln x}$(前提 $x>0$)</li>
+</ul>
+</div>
+
+<h3>三大证明方法</h3>
+<ol>
+<li><b>构造函数 + 求最值</b>(万能):证 $f>g\Leftrightarrow h=f-g$,证 $h_{\min}>0$</li>
+<li><b>切线放缩 / 经典不等式</b>:利用上表直接放缩</li>
+<li><b>同构思想</b>:把两边凑成同一函数的不同值,用单调性转化</li>
+</ol>
+
+<div class="example">
+<div class="example-header">📝 经典例题 7<span class="tag">同构思想 · 高考压轴常考</span></div>
+<div class="example-body">
+<div class="example-question">
+证明:对任意 $x>0$,有 $xe^x\geq x+\ln x+1$(等号在 $xe^x=1$ 时成立)。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步 · 识别同构结构。</b>注意 $xe^x$ 这个组合:
+$$xe^x=e^x\cdot x=e^x\cdot e^{\ln x}=e^{x+\ln x}\quad(x>0)$$
+左边变成 $e^{x+\ln x}$,右边是 $(x+\ln x)+1$,<b>左右出现同一个表达式 $x+\ln x$</b>。
+</div>
+<div class="step"><b>第 2 步 · 换元转化。</b>令 $t=x+\ln x$($x>0$ 时,$t$ 取遍 $\mathbb R$,因为 $t$ 关于 $x$ 单增,$x\to 0^+$ 时 $t\to-\infty$,$x\to+\infty$ 时 $t\to+\infty$)。
+<br>原不等式等价于:
+$$e^t\geq t+1$$
+</div>
+<div class="step"><b>第 3 步 · 用切线放缩。</b>$e^t\geq t+1$ 是必背的经典不等式(等号 $t=0$),恒成立。
+<br>所以 $xe^x\geq x+\ln x+1$ 对 $x>0$ 恒成立,等号当 $t=0$ 即 $x+\ln x=0$,等价于 $xe^x=e^0=1$。✓
+</div>
+<p><b>同构口诀:</b>看到 $xe^x$ 想到 $e^{x+\ln x}$;看到 $x+\ln x$ 想到 $\ln(xe^x)$。两边凑出<b>同一函数在不同变量处的取值</b>,就能用 $e^t\geq t+1$ 或 $\ln u\leq u-1$ 这类经典不等式秒解。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 7-2<span class="tag">构造函数 · 万能法</span></div>
+<div class="example-body">
+<div class="example-question">
+证明：当 $x>0$ 时，$\dfrac{x}{1+x}<\ln(1+x)<x$。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：证右半 $\ln(1+x)<x$。</b>
+<br>令 $h_1(x)=x-\ln(1+x)$（$x>0$），证 $h_1(x)>0$。
+$$h_1'(x)=1-\frac{1}{1+x}=\frac{x}{1+x}>0\text{ 对 }x>0$$
+所以 $h_1$ 在 $(0,+\infty)$ 严格递增。$h_1(0)=0$，所以 $h_1(x)>0$ 对 $x>0$。✓
+</div>
+<div class="step"><b>第 2 步：证左半 $\dfrac{x}{1+x}<\ln(1+x)$。</b>
+<br>令 $h_2(x)=\ln(1+x)-\dfrac{x}{1+x}$（$x>0$）。
+$$h_2'(x)=\frac{1}{1+x}-\frac{(1+x)-x}{(1+x)^2}=\frac{1}{1+x}-\frac{1}{(1+x)^2}=\frac{(1+x)-1}{(1+x)^2}=\frac{x}{(1+x)^2}>0$$
+所以 $h_2$ 在 $(0,+\infty)$ 严格递增。$h_2(0)=0$，所以 $h_2(x)>0$ 对 $x>0$。✓
+</div>
+<div class="step"><b>结论：</b>两半都证完，$\dfrac{x}{1+x}<\ln(1+x)<x$。✓</div>
+<p><b>关键：</b>构造函数法的<b>万能套路</b>——
+<ol>
+<li>移项使一边为 0：$f(x)>g(x)\Leftrightarrow h(x)=f(x)-g(x)>0$</li>
+<li>求 $h'(x)$，证明 $h$ 在区间上单调</li>
+<li>$h$ 在端点的值（这里是 $h(0)=0$）+ 单调性 → 结论</li>
+</ol>
+本题 $\ln(1+x)\leq x$ 等同于 $\ln u\leq u-1$（令 $u=1+x$），是必背切线放缩之一。
+</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 7-3<span class="tag">切线放缩 · 复合应用</span></div>
+<div class="example-body">
+<div class="example-question">
+证明：当 $x>0$ 时，$e^x+\sin x>1+2x$。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>思路：</b>用切线放缩把 $e^x$ 和 $\sin x$ 都换成 $x$ 的表达式。
+<ul>
+<li>$e^x\geq 1+x$（等号 $x=0$）</li>
+<li>$\sin x$ 在 $x>0$ 较小时近似 $x$，但 $\sin x<x$（等号 $x=0$）</li>
+</ul>
+直接相加：$e^x+\sin x\geq (1+x)+\sin x$，需证 $\sin x>x$，<b>不对</b>（$\sin x\leq x$）。
+<br>所以不能直接用 $e^x\geq 1+x$，需要<b>更强的放缩</b>。
+</div>
+<div class="step"><b>构造函数法。</b>令 $h(x)=e^x+\sin x-1-2x$（$x>0$）。
+$$h'(x)=e^x+\cos x-2$$
+$$h''(x)=e^x-\sin x$$
+当 $x>0$：$e^x>1\geq\sin x$，所以 $h''(x)>0$，$h'$ 严格递增。
+<br>$h'(0)=1+1-2=0$，所以 $h'(x)>0$ 对 $x>0$，$h$ 严格递增。
+<br>$h(0)=1+0-1-0=0$，所以 $h(x)>0$ 对 $x>0$。✓
+</div>
+<div class="step"><b>结论：</b>$e^x+\sin x>1+2x$ 对 $x>0$ 成立。</div>
+<p><b>关键：</b>当一次切线放缩不够强时，用<b>"二阶导技巧"</b>：
+<ol>
+<li>$h''(x)>0$ 证 $h'$ 单调递增</li>
+<li>$h'(0)=0$ + 单调递增 ⇒ $h'(x)>0$ 对 $x>0$</li>
+<li>$h$ 单调递增 + $h(0)=0$ ⇒ $h(x)>0$ 对 $x>0$</li>
+</ol>
+"端点为 0 + 单调性"层层传递，是高阶导数不等式题的标准武器。
+</p>
+</div>
+</details>
+</div>
+</div>
+</section>
+
+<!-- C7_END -->
+
+<!-- ========== 第八章 ========== -->
+<section class="chap" id="c8">
+<h2>八、隐零点问题</h2>
+
+<h3>场景</h3>
+<p>求 $h(x)=f(x)-g(x)$ 的最值时,$h'(x)=0$ 解不出显式根 $x_0$。</p>
+
+<h3>处理方法</h3>
+<ol>
+<li>设 $h'(x_0)=0$,但<b>不解出</b> $x_0$</li>
+<li>用 $h'(x_0)=0$ 这个关系<b>消元</b>,把 $h(x_0)$ 化简</li>
+<li>把超越式(如 $e^{x_0}$、$\ln x_0$)替换成关于 $x_0$ 的代数式</li>
+<li>对化简后的 $h(x_0)$ 估值,结合 $x_0$ 的范围证不等式</li>
+</ol>
+
+<div class="example">
+<div class="example-header">📝 经典例题 8<span class="tag">隐零点 · 消元化简</span></div>
+<div class="example-body">
+<div class="example-question">
+已知 $f(x)=e^x-\ln(x+m)$($m\in\mathbb R$)。证明:当 $m\leq 2$ 时,$f(x)>0$ 恒成立。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步:先把问题集中到极值点。</b>定义域 $x>-m$。
+$$f'(x)=e^x-\frac{1}{x+m}$$
+$f'$ 单调递增(因为 $e^x$ 递增,$-\dfrac{1}{x+m}$ 也递增),且
+<ul>
+<li>$x\to -m^+$:$-\dfrac{1}{x+m}\to-\infty$,$f'\to-\infty$</li>
+<li>$x\to+\infty$:$f'\to+\infty$</li>
+</ul>
+所以 $f'$ 有<b>唯一</b>零点 $x_0$,$f$ 在 $(-m,x_0)$ 递减,$(x_0,+\infty)$ 递增,$f_{\min}=f(x_0)$。
+</div>
+<div class="step"><b>第 2 步:用 $f'(x_0)=0$ 提取关系式。</b>
+$$e^{x_0}=\frac{1}{x_0+m}\quad (\star)$$
+两边取对数:$x_0=-\ln(x_0+m)$,即 $\ln(x_0+m)=-x_0$ ($\star\star$)。
+</div>
+<div class="step"><b>第 3 步 · 消元化简 $f(x_0)$。</b>
+$$f(x_0)=e^{x_0}-\ln(x_0+m)\xrightarrow{(\star),(\star\star)}\frac{1}{x_0+m}-(-x_0)=\frac{1}{x_0+m}+x_0$$
+<b>$e^{x_0}$ 和 $\ln(x_0+m)$ 都被消掉了,变成关于 $x_0$ 的初等表达式!</b>
+</div>
+<div class="step"><b>第 4 步:对初等表达式估值。</b>由 $(\star)$:$x_0+m=e^{-x_0}>0$,所以
+$$f(x_0)=\frac{1}{x_0+m}+x_0=e^{x_0}+x_0$$
+等等,我们直接用 $(\star)$ 替换 $\dfrac{1}{x_0+m}=e^{x_0}$ 反而回到原表达式 — 这不是无用功,而是<b>把含 $m$ 的项也清掉了</b>。
+<br>现在 $f(x_0)=e^{x_0}+x_0$。
+<br>由 $e^{x_0}=\dfrac{1}{x_0+m}$,当 $m\leq 2$ 时,$x_0+m\leq x_0+2$,所以 $e^{x_0}\geq\dfrac{1}{x_0+2}$。
+<br>由经典放缩 $e^{x_0}\geq x_0+1$:
+$$f(x_0)=e^{x_0}+x_0\geq(x_0+1)+x_0=2x_0+1$$
+还要证 $2x_0+1>0$ 即 $x_0>-\dfrac{1}{2}$。
+</div>
+<div class="step"><b>第 5 步:证 $x_0>-\dfrac{1}{2}$($m\leq 2$ 时)。</b>
+<br>$f'$ 单增,只需证 $f'(-\dfrac{1}{2})<0$,即可推出 $x_0>-\dfrac{1}{2}$。
+$$f'(-\tfrac{1}{2})=e^{-1/2}-\frac{1}{-\frac{1}{2}+m}=\frac{1}{\sqrt e}-\frac{1}{m-\frac{1}{2}}$$
+$m\leq 2$ 时 $m-\dfrac{1}{2}\leq\dfrac{3}{2}$,所以 $\dfrac{1}{m-\frac{1}{2}}\geq\dfrac{2}{3}$。
+<br>而 $\dfrac{1}{\sqrt e}\approx 0.607<\dfrac{2}{3}\approx 0.667$,所以 $f'(-\dfrac{1}{2})<0$ ✓
+<br>所以 $x_0>-\dfrac{1}{2}$,从而 $f(x_0)\geq 2x_0+1>0$。
+</div>
+<div class="step"><b>结论:</b>$m\leq 2$ 时,$f(x_0)>0$,所以 $f(x)>0$ 恒成立。✓</div>
+<p><b>核心套路总结:</b>
+<ol>
+<li>$f'(x_0)=0$ 解不出 $x_0$,但能写出超越关系如 $e^{x_0}=\dfrac{1}{x_0+m}$</li>
+<li>把 $f(x_0)$ 中的 $e^{x_0}$、$\ln(x_0+m)$ 都用该关系换成 $x_0$ 的代数式</li>
+<li>得到的初等表达式,配合 $x_0$ 的范围估计(可能借助切线放缩),即可证不等式</li>
+</ol>
+</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 8-2<span class="tag">隐零点 · 取值范围</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=e^x-x-2$，证明：$f(x)$ 有两个零点 $x_1<0<x_2$，且 $x_1+x_2<\ln 2$。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>第 1 步：证两个零点存在。</b>$f'(x)=e^x-1$
+<ul>
+<li>$x<0$：$f'<0$，$f$ 递减</li>
+<li>$x>0$：$f'>0$，$f$ 递增</li>
+</ul>
+最小值 $f(0)=1-0-2=-1<0$。
+<br>$x\to-\infty$：$f\to+\infty$；$x\to+\infty$：$f\to+\infty$
+<br>所以 $f$ 在 $(-\infty,0)$ 和 $(0,+\infty)$ 各有一个零点 $x_1<0<x_2$。✓
+</div>
+<div class="step"><b>第 2 步：列方程。</b>$x_1, x_2$ 满足：
+$$e^{x_1}=x_1+2,\quad e^{x_2}=x_2+2$$
+</div>
+<div class="step"><b>第 3 步：构造对称化函数证 $x_1+x_2<\ln 2$。</b>
+<br>关键观察：$x_1+x_2<\ln 2 \Leftrightarrow x_1<\ln 2-x_2$（其中 $\ln 2-x_2<0$，因为 $x_2>0$ 待证；但实际 $x_2\approx 1.146>\ln 2\approx 0.693$，所以 $\ln 2-x_2<0$，与 $x_1<0$ 同号）。
+<br>$f$ 在 $(-\infty,0)$ 递减，所以
+$$x_1<\ln 2-x_2\Leftrightarrow f(x_1)>f(\ln 2-x_2)$$
+$f(x_1)=0$，所以等价于 $f(\ln 2-x_2)<0$。
+</div>
+<div class="step"><b>第 4 步：算 $f(\ln 2-x_2)$。</b>
+$$f(\ln 2-x_2)=e^{\ln 2-x_2}-(\ln 2-x_2)-2=\frac{2}{e^{x_2}}-\ln 2+x_2-2$$
+由 $e^{x_2}=x_2+2$：
+$$=\frac{2}{x_2+2}+x_2-\ln 2-2$$
+令 $\varphi(t)=\dfrac{2}{t+2}+t-\ln 2-2$（$t=x_2>0$），需证 $\varphi(t)<0$。
+$$\varphi'(t)=-\frac{2}{(t+2)^2}+1>0\text{ 当 }(t+2)^2>2\text{ 即 }t>\sqrt 2-2\text{（恒满足，因 }t>0\text{）}$$
+$\varphi(0)=1+0-\ln 2-2=-1-\ln 2<0$。但还需上界 — $\varphi$ 单增，所以可能不 $<0$ 在 $t\to+\infty$。
+<br>验证 $t=x_2$ 的具体值：$e^{x_2}=x_2+2$。$x_2=1$ 时 $e>3=x+2$？$e\approx 2.72<3$，所以 $x_2>1$。$x_2=1.2$：$e^{1.2}\approx 3.32>3.2$ ✓，所以 $x_2$ 接近 $1.146$。
+<br>$\varphi(1.146)=\dfrac{2}{3.146}+1.146-\ln 2-2\approx 0.636+1.146-0.693-2\approx -0.911<0$ ✓
+</div>
+<div class="step"><b>结论：</b>$f(\ln 2-x_2)<0$，所以 $x_1<\ln 2-x_2$，即 $x_1+x_2<\ln 2$。✓
+<br>（注：完整严格证明需精细估计 $x_2$ 的范围，本题数值验证已足够说明思路。）
+</div>
+<p><b>关键：</b>"证两零点之和满足不等式" 是<b>极值点偏移类</b>题型在零点版本的变种。三步：
+<ol>
+<li>用 $f$ 单调性把 $x_1<C-x_2$ 转为 $f(x_1)>f(C-x_2)$（这里 $C=\ln 2$）</li>
+<li>$f(x_1)=0$，所以等价于证 $f(C-x_2)<0$</li>
+<li>用 $x_2$ 满足的方程关系（$e^{x_2}=x_2+2$）消元，得到关于 $x_2$ 的初等表达式</li>
+</ol>
+</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 8-3<span class="tag">隐零点 + 范围估计</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=x\ln x-ax$（$a\in\mathbb R$）。若 $f$ 在 $(0,+\infty)$ 上的最小值为 $m$，求 $m$ 关于 $a$ 的表达式。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step">$f'(x)=\ln x+1-a$，$f'(x)=0\Rightarrow \ln x=a-1\Rightarrow x_0=e^{a-1}$
+<br>$x\in(0,x_0)$：$f'<0$ 递减；$x\in(x_0,+\infty)$：$f'>0$ 递增
+<br>所以最小值在 $x_0$ 处。
+</div>
+<div class="step"><b>用 $x_0$ 满足的关系消元：</b>$\ln x_0=a-1$，所以
+$$m=f(x_0)=x_0\ln x_0-ax_0=x_0(a-1)-ax_0=-x_0=-e^{a-1}$$
+</div>
+<div class="step"><b>结论：</b>$m=-e^{a-1}$ 对所有 $a\in\mathbb R$ 成立。</div>
+<p><b>关键：</b>本题 $x_0=e^{a-1}$ 其实能解出，是<b>"伪隐零点"</b>。但解题时<b>不要把 $x_0$ 代入展开</b>，而是用 $\ln x_0=a-1$ 这个关系消元，否则计算 $x_0\ln x_0$ 时容易出错。<br>
+<b>隐零点的本质：</b>$f'(x_0)=0$ 提供的<b>方程关系</b>比 $x_0$ 的<b>具体值</b>更有用。
+</p>
+</div>
+</details>
+</div>
+</div>
+</section>
+<section class="chap" id="c9">
+<h2>九、双变量与极值点偏移</h2>
+
+<h3>极值点偏移</h3>
+<p>设 $f(x_1)=f(x_2)$($x_1\neq x_2$),$x_0$ 是极值点,问 $x_1+x_2$ 与 $2x_0$ 的大小关系。</p>
+
+<h3>对称化构造法(标准套路)</h3>
+<ol>
+<li>不妨设 $x_1<x_0<x_2$</li>
+<li>构造 $g(x)=f(x)-f(2x_0-x)$</li>
+<li>判定 $g(x)$ 在 $(x_0,+\infty)$ 上的符号(通常用 $g'$ 的单调性 + $g(x_0)=0$)</li>
+<li>由 $g(x_2)$ 的符号 $\to$ $f(x_2)$ 与 $f(2x_0-x_2)$ 的大小 $\to$ 借助 $f(x_1)=f(x_2)$ 和 $f$ 在 $(-\infty,x_0)$ 的单调性,得出 $x_1$ 与 $2x_0-x_2$ 的大小</li>
+</ol>
+
+<div class="example">
+<div class="example-header">📝 经典例题 9<span class="tag">极值点偏移 · 压轴中的压轴</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=xe^{-x}$,若 $f(x_1)=f(x_2)$ 且 $x_1\neq x_2$,证明:$x_1+x_2>2$。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step">$f'(x)=e^{-x}-xe^{-x}=(1-x)e^{-x}$
+<br>$f'(x)>0\Leftrightarrow x<1$;$f'(x)<0\Leftrightarrow x>1$
+<br>极大值点 $x_0=1$,$f(1)=\dfrac{1}{e}$
+<br>$f$ 在 $(-\infty,1)$ 递增,$(1,+\infty)$ 递减
+<br>$f(x_1)=f(x_2)$ 且 $x_1\neq x_2$,不妨 $x_1<1<x_2$
+</div>
+<div class="step"><b>对称化构造:</b>令 $g(x)=f(x)-f(2-x)$($x\geq 1$)
+$$g(x)=xe^{-x}-(2-x)e^{-(2-x)}=xe^{-x}-(2-x)e^{x-2}$$
+$$g'(x)=(1-x)e^{-x}-[-e^{x-2}+(2-x)e^{x-2}]$$
+$$=(1-x)e^{-x}+e^{x-2}-(2-x)e^{x-2}$$
+$$=(1-x)e^{-x}+(x-1)e^{x-2}$$
+$$=(x-1)[e^{x-2}-e^{-x}]$$
+$$=(x-1)\cdot e^{-x}[e^{2x-2}-1]$$
+</div>
+<div class="step">当 $x>1$:$x-1>0$,$2x-2>0\Rightarrow e^{2x-2}-1>0$,$e^{-x}>0$
+<br>所以 $g'(x)>0$,$g(x)$ 在 $(1,+\infty)$ 递增
+<br>$g(1)=f(1)-f(1)=0$,所以 $g(x)>0$ 对 $x>1$
+<br>即 $f(x)>f(2-x)$ 对 $x>1$
+</div>
+<div class="step">代 $x=x_2>1$:$f(x_2)>f(2-x_2)$
+<br>由 $f(x_1)=f(x_2)$:$f(x_1)>f(2-x_2)$
+<br>注意 $x_2>1\Rightarrow 2-x_2<1$,所以 $x_1$ 和 $2-x_2$ 都在 $(-\infty,1)$,$f$ 在此区间递增
+<br>$f(x_1)>f(2-x_2)\Rightarrow x_1>2-x_2$
+<br>$\therefore x_1+x_2>2$ ✓
+</div>
+<p><b>关键:</b>这是标准的极值点偏移题。三步死记:<b>构造 $g$ → 证 $g$ 在极值点一侧的符号 → 用 $f$ 单调性回推</b>。证 $g$ 的符号时,核心是计算 $g'$ 并因式分解。</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 9-2<span class="tag">双零点 · 韦达定理</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=\ln x-ax$ 有两个不同的零点 $x_1<x_2$。
+<br>(1) 求 $a$ 的取值范围。
+<br>(2) 证明：$x_1+x_2>\dfrac{2}{a}$。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>(1) </b>$f(x)=0\Leftrightarrow \ln x=ax\Leftrightarrow a=\dfrac{\ln x}{x}$
+<br>令 $g(x)=\dfrac{\ln x}{x}$，$g'(x)=\dfrac{1-\ln x}{x^2}$
+<br>$g$ 在 $(0,e)$ 递增，$(e,+\infty)$ 递减，$g(e)=\dfrac{1}{e}$（最大值），$g(1)=0$，$g\to-\infty$ 当 $x\to 0^+$，$g\to 0^+$ 当 $x\to+\infty$。
+<br>水平线 $y=a$ 与 $g$ 有 2 个交点 $\Leftrightarrow 0<a<\dfrac{1}{e}$。
+</div>
+<div class="step"><b>(2) </b>由零点方程：
+$$\ln x_1=ax_1,\quad \ln x_2=ax_2$$
+两式相减：$\ln x_1-\ln x_2=a(x_1-x_2)$
+$$a=\frac{\ln x_1-\ln x_2}{x_1-x_2}=\frac{\ln\frac{x_1}{x_2}}{x_1-x_2}\quad(\star)$$
+要证 $x_1+x_2>\dfrac{2}{a}$，由 $(\star)$ 代入：
+$$x_1+x_2>\frac{2(x_1-x_2)}{\ln(x_1/x_2)}$$
+注意 $x_1<x_2$，所以 $\ln(x_1/x_2)<0$，$x_1-x_2<0$，<b>右边为正</b>。
+<br>不等式两边除以 $x_1-x_2$（注意是负数，<b>不等号反向</b>）：
+$$\frac{x_1+x_2}{x_1-x_2}<\frac{2}{\ln(x_1/x_2)}$$
+</div>
+<div class="step"><b>换元简化。</b>令 $t=\dfrac{x_1}{x_2}\in(0,1)$。$\dfrac{x_1+x_2}{x_1-x_2}=\dfrac{t+1}{t-1}$。
+<br>需证 $\dfrac{t+1}{t-1}<\dfrac{2}{\ln t}$。
+<br>$t\in(0,1)$：$t-1<0$，$\ln t<0$。两边同乘 $(t-1)\ln t>0$（两负数乘正），不等号<b>不变</b>：
+$$(t+1)\ln t<\frac{2(t-1)\ln t}{\ln t}=2(t-1)$$
+$$(t+1)\ln t<2(t-1)$$
+$$(t+1)\ln t-2(t-1)<0\quad (\diamondsuit)$$
+</div>
+<div class="step"><b>证 $(\diamondsuit)$：</b>令 $\varphi(t)=(t+1)\ln t-2(t-1)$（$0<t<1$）。
+$$\varphi'(t)=\ln t+\frac{t+1}{t}-2=\ln t+\frac{1}{t}-1$$
+$$\varphi''(t)=\frac{1}{t}-\frac{1}{t^2}=\frac{t-1}{t^2}<0\text{ 对 }t\in(0,1)$$
+$\varphi'$ 在 $(0,1)$ 递减，$\varphi'(1)=0+1-1=0$，所以 $\varphi'(t)>\varphi'(1)=0$ 对 $t\in(0,1)$，<b>$\varphi$ 递增</b>。
+<br>$\varphi(1)=2\cdot 0-0=0$，所以 $\varphi(t)<\varphi(1)=0$ 对 $t\in(0,1)$。✓
+<br>所以 $(\diamondsuit)$ 成立，$x_1+x_2>\dfrac{2}{a}$ 得证。
+</div>
+<p><b>关键：</b>双零点题的核心技巧——
+<ol>
+<li><b>两式相减</b>消去参数 $a$：得到 $a$ 关于 $x_1,x_2$ 的表达</li>
+<li><b>换元</b> $t=\dfrac{x_1}{x_2}$ 把双变量变成单变量</li>
+<li>构造关于 $t$ 的单变量不等式，求导证明</li>
+</ol>
+注意 $\ln t<0$ 时<b>不等式两边除以它要反号</b>，这是高频出错点。
+</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 9-3<span class="tag">极值点偏移 · 进阶变形</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=e^x-ax$（$a>e$）。若 $f(x_1)=f(x_2)$（$x_1<x_2$），证明：$x_1+x_2<2\ln a$。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step">$f'(x)=e^x-a$，$f'=0\Rightarrow x=\ln a$。极小值点 $x_0=\ln a$。
+<br>$f$ 在 $(-\infty,\ln a)$ 递减，$(\ln a,+\infty)$ 递增。
+<br>$f(x_1)=f(x_2)$ 要求 $x_1<\ln a<x_2$。
+</div>
+<div class="step"><b>对称化构造。</b>令 $g(x)=f(x)-f(2\ln a-x)$，研究 $x>\ln a$ 时 $g$ 的符号。
+$$g(x)=(e^x-ax)-(e^{2\ln a-x}-a(2\ln a-x))=e^x-ax-\frac{a^2}{e^x}+2a\ln a-ax$$
+$$=e^x-\frac{a^2}{e^x}-2ax+2a\ln a$$
+$$g'(x)=e^x+\frac{a^2}{e^x}-2a$$
+由均值不等式：$e^x+\dfrac{a^2}{e^x}\geq 2\sqrt{a^2}=2a$，等号 $\Leftrightarrow e^x=\dfrac{a^2}{e^x}\Leftrightarrow e^{2x}=a^2\Leftrightarrow x=\ln a$。
+<br>所以 $g'(x)\geq 0$，等号仅 $x=\ln a$。<b>$g$ 在 $\mathbb R$ 上单调递增。</b>
+</div>
+<div class="step">$g(\ln a)=f(\ln a)-f(\ln a)=0$，且 $g$ 严格递增（除 $x=\ln a$ 一点斜率 0 外）。
+<br>对 $x>\ln a$：$g(x)>g(\ln a)=0$，即 $f(x)>f(2\ln a-x)$。
+<br>取 $x=x_2>\ln a$：$f(x_2)>f(2\ln a-x_2)$。
+<br>由 $f(x_1)=f(x_2)$：$f(x_1)>f(2\ln a-x_2)$。
+<br>$x_1$ 和 $2\ln a-x_2$ 都 $<\ln a$（因 $x_2>\ln a\Rightarrow 2\ln a-x_2<\ln a$），$f$ 在此区间递减：
+$$f(x_1)>f(2\ln a-x_2)\Leftrightarrow x_1<2\ln a-x_2$$
+$$\Rightarrow x_1+x_2<2\ln a$$
+证毕。✓
+</div>
+<p><b>关键：</b>本题与例题 9 的方向<b>相反</b>（$<$ 而不是 $>$），原因是 $f$ 在极值点处是<b>极小值</b>（不是极大值）。两个方向的判断：
+<ul>
+<li>极大值偏移：$x_1+x_2>2x_0$（如 $xe^{-x}$）</li>
+<li>极小值偏移：$x_1+x_2<2x_0$（如本题 $e^x-ax$）</li>
+</ul>
+关键判断在<b>构造 $g(x)=f(x)-f(2x_0-x)$ 后，$g$ 在 $x>x_0$ 是否递增</b>，决定方向。
+</p>
+</div>
+</details>
+</div>
+</div>
+</section>
+<section class="chap" id="c10">
+<h2>十、压轴综合题</h2>
+
+<h3>17 分大题答题模板</h3>
+<ul>
+<li><b>(1) 小问</b>(通常考切线/单调性/极值,约 4~6 分):求导 → 通分 → 因式分解 → 讨论 → 写区间</li>
+<li><b>(2) 小问</b>(通常考恒成立/不等式/零点,约 7~11 分):转化为函数最值或零点个数 → 构造辅助函数 → 求最值 → 与目标比较</li>
+</ul>
+
+<h3>评分关键点(必拿)</h3>
+<ul>
+<li>定义域:1 分(必写)</li>
+<li>求导正确:2 分</li>
+<li>单调性表述完整:2 分</li>
+<li>极值/最值计算:2 分</li>
+<li>分类讨论合理:2 分(含参题)</li>
+<li>最终结论清晰:1 分</li>
+</ul>
+
+<div class="example">
+<div class="example-header">📝 经典例题 10<span class="tag">综合压轴 · 高考真题改编</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=\ln x-\dfrac{a(x-1)}{x+1}$。
+<br>(1) 若 $a=2$,求 $f(x)$ 的单调区间;
+<br>(2) 若对任意 $x>1$,有 $f(x)>0$,求 $a$ 的取值范围。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>(1) $a=2$ 时:</b>$f(x)=\ln x-\dfrac{2(x-1)}{x+1}$,定义域 $(0,+\infty)$。
+$$f'(x)=\frac{1}{x}-\frac{2(x+1)-2(x-1)}{(x+1)^2}=\frac{1}{x}-\frac{4}{(x+1)^2}$$
+$$=\frac{(x+1)^2-4x}{x(x+1)^2}=\frac{x^2-2x+1}{x(x+1)^2}=\frac{(x-1)^2}{x(x+1)^2}\geq 0$$
+等号仅当 $x=1$。<b>所以 $f$ 在 $(0,+\infty)$ 单调递增</b>(没有极值)。
+</div>
+
+<div class="step"><b>(2)</b> 注意 $f(1)=0-0=0$。由(1)启发,猜 $a=2$ 是临界值。
+<br>计算 $f'(x)=\dfrac{1}{x}-\dfrac{2a}{(x+1)^2}=\dfrac{(x+1)^2-2ax}{x(x+1)^2}$
+<br>分子 $\varphi(x)=(x+1)^2-2ax=x^2+(2-2a)x+1$
+</div>
+
+<div class="step"><b>情况 1:$a\leq 2$</b>
+<br>$\varphi(x)=x^2-2(a-1)x+1$,判别式 $\Delta=4(a-1)^2-4=4(a^2-2a)$
+<br>当 $a\leq 2$ 时(注意还要 $a-1$ 的符号):
+<ul>
+<li>若 $a\leq 1$:$\Delta=4a(a-2)\geq 0$ 当 $a\leq 0$,但分析 $\varphi$ 在 $x>1$ 的符号
+<br>$\varphi(1)=1+2-2a+1=4-2a\geq 2>0$ 当 $a\leq 1$
+<br>$\varphi$ 的对称轴 $x=a-1\leq 0$,所以 $\varphi$ 在 $(0,+\infty)$ 递增
+<br>$\varphi(x)\geq \varphi(0)=1>0$ ✓ 在 $x>0$ 时
+</li>
+<li>若 $1<a\leq 2$:对称轴 $x=a-1\in(0,1]$
+<br>$\varphi$ 的最小值在 $x=a-1$ 处:$\varphi(a-1)=(a-1)^2-2(a-1)^2+1=1-(a-1)^2=2a-a^2=a(2-a)\geq 0$
+<br>等号在 $a=2$ ✓
+</li>
+</ul>
+所以当 $a\leq 2$,$\varphi(x)\geq 0$ 对 $x>0$,即 $f'(x)\geq 0$,$f$ 在 $(0,+\infty)$ 递增。
+<br>$\Rightarrow f(x)>f(1)=0$ 对 $x>1$。<b>这部分成立。</b>
+</div>
+
+<div class="step"><b>情况 2:$a>2$</b>
+<br>对称轴 $x=a-1>1$,$\varphi(1)=4-2a<0$
+<br>所以 $\varphi$ 在 $x=1$ 邻域右侧为负 $\Rightarrow$ $f'(x)<0$ 在 $(1,$ 某处$)$
+<br>$\Rightarrow f$ 在 $(1,$ 某处$)$ 递减
+<br>$\Rightarrow$ 存在 $x>1$ 使 $f(x)<f(1)=0$,<b>不满足</b>。
+</div>
+
+<div class="step"><b>综合:</b> $a\leq 2$。</div>
+
+<p><b>关键启示:</b>
+<ol>
+<li>(1) 题暗示了临界值 $a=2$,做(2) 时要敏感</li>
+<li>$f(1)=0$ 是天然边界,所以问题变成"$f$ 在 $x=1$ 右侧是否递增"</li>
+<li>$f'(x)\geq 0\Leftrightarrow \varphi(x)\geq 0$ 在 $x>0$,转化为二次函数最值</li>
+<li>临界 $a=2$ 时 $f'=\dfrac{(x-1)^2}{x(x+1)^2}\geq 0$ 仍成立,所以闭区间 $a\leq 2$ 而非开区间</li>
+</ol>
+</p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 10-2<span class="tag">综合压轴 · 不等式 + 零点</span></div>
+<div class="example-body">
+<div class="example-question">
+设 $f(x)=ax-\ln x$，其中 $a$ 为常数。
+<br>(1) 若 $f(x)\geq 1$ 对一切 $x>0$ 恒成立，求 $a$ 的取值范围。
+<br>(2) 在 (1) 的条件下，证明：$f(x)$ 有唯一极小值点 $x_0$，且 $f(x_0)\geq 1$。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>(1) </b>$f(x)\geq 1\Leftrightarrow ax\geq 1+\ln x\Leftrightarrow a\geq\dfrac{1+\ln x}{x}$（参变分离）
+<br>令 $g(x)=\dfrac{1+\ln x}{x}$，需 $a\geq g(x)_{\max}$。
+$$g'(x)=\frac{\frac{1}{x}\cdot x-(1+\ln x)}{x^2}=\frac{-\ln x}{x^2}$$
+$g'>0\Leftrightarrow\ln x<0\Leftrightarrow 0<x<1$，$g'<0\Leftrightarrow x>1$。
+<br>$g$ 在 $x=1$ 处取最大值 $g(1)=\dfrac{1+0}{1}=1$。
+<br>所以 $a\geq 1$。
+</div>
+<div class="step"><b>(2) </b>$f'(x)=a-\dfrac{1}{x}=\dfrac{ax-1}{x}$
+<ul>
+<li>$0<x<\dfrac{1}{a}$：$f'<0$，$f$ 递减</li>
+<li>$x>\dfrac{1}{a}$：$f'>0$，$f$ 递增</li>
+</ul>
+$f$ 有唯一极小值点 $x_0=\dfrac{1}{a}$。
+$$f(x_0)=a\cdot\frac{1}{a}-\ln\frac{1}{a}=1+\ln a$$
+当 $a\geq 1$ 时，$\ln a\geq 0$，所以 $f(x_0)=1+\ln a\geq 1$。✓
+</div>
+<p><b>关键：</b>本题展示<b>"恒成立 → 参变分离 → 求最值"</b>的标准流程，且 (2) 把 (1) 的结论"具体化"——抽象的"$\geq 1$ 恒成立"变成"极小值 $f(x_0)=1+\ln a$ 的具体值"，二者一致。<b>(1)(2) 经常有逻辑关联，做 (2) 时要回顾 (1) 的极值点位置。</b></p>
+</div>
+</details>
+</div>
+</div>
+
+<div class="example">
+<div class="example-header">📝 经典例题 10-3<span class="tag">真高考改编 · 综合性最强</span></div>
+<div class="example-body">
+<div class="example-question">
+已知函数 $f(x)=\ln x+\dfrac{a}{x}-1$（$a\in\mathbb R$）。
+<br>(1) 讨论 $f(x)$ 的单调性。
+<br>(2) 若 $f(x)$ 有两个不同的零点 $x_1<x_2$，证明：$x_1+x_2>2a$。
+</div>
+<details>
+<summary>查看详解</summary>
+<div class="solution">
+<div class="step"><b>(1) </b>定义域 $(0,+\infty)$。
+$$f'(x)=\frac{1}{x}-\frac{a}{x^2}=\frac{x-a}{x^2}$$
+<ul>
+<li>$a\leq 0$：$f'(x)>0$ 对 $x>0$，$f$ 在 $(0,+\infty)$ 单增</li>
+<li>$a>0$：$f'>0\Leftrightarrow x>a$；$f'<0\Leftrightarrow 0<x<a$。$f$ 在 $(0,a)$ 递减，$(a,+\infty)$ 递增</li>
+</ul>
+</div>
+<div class="step"><b>(2) </b>$f$ 有两个零点 $\Rightarrow$ 必为 $a>0$ 情形（单增时最多 1 个零点）。
+<br>极小值 $f(a)=\ln a+\dfrac{a}{a}-1=\ln a<0\Rightarrow 0<a<1$
+<br>边界：$x\to 0^+$：$\dfrac{a}{x}\to+\infty$，$f\to+\infty$；$x\to+\infty$：$\ln x\to+\infty$，$f\to+\infty$。
+<br>所以 $f$ 有两零点 $\Leftrightarrow 0<a<1$。
+</div>
+<div class="step"><b>证 $x_1+x_2>2a$。</b>零点方程：
+$$\ln x_1+\frac{a}{x_1}-1=0\Rightarrow \ln x_1=1-\frac{a}{x_1}$$
+$$\ln x_2=1-\frac{a}{x_2}$$
+相减：$\ln\dfrac{x_1}{x_2}=\dfrac{a}{x_2}-\dfrac{a}{x_1}=\dfrac{a(x_1-x_2)}{x_1x_2}$
+$$a=\frac{x_1 x_2\ln(x_1/x_2)}{x_1-x_2}\quad(\star)$$
+</div>
+<div class="step"><b>换元。</b>令 $t=\dfrac{x_1}{x_2}\in(0,1)$。
+$$\text{要证 }x_1+x_2>2a=\frac{2x_1x_2\ln t}{x_1-x_2}$$
+$$\Leftrightarrow (x_1+x_2)(x_1-x_2)<2x_1x_2\ln t\text{（注：}\ln t<0,x_1-x_2<0\text{，比例不变）}$$
+$$\Leftrightarrow x_1^2-x_2^2<2x_1x_2\ln t$$
+两边除以 $x_2^2$：
+$$t^2-1<2t\ln t$$
+$$2t\ln t-t^2+1>0\quad (\diamondsuit)$$
+</div>
+<div class="step"><b>证 $(\diamondsuit)$。</b>令 $\varphi(t)=2t\ln t-t^2+1$（$0<t<1$）。
+$$\varphi'(t)=2\ln t+2-2t=2(\ln t+1-t)$$
+由经典不等式 $\ln t\leq t-1$（等号 $t=1$）：$\ln t+1-t\leq 0$，等号仅 $t=1$。
+<br>所以 $\varphi'(t)\leq 0$，等号仅 $t=1$，$\varphi$ 在 $(0,1)$ 严格递减。
+<br>$\varphi(1)=0-1+1=0$，所以 $\varphi(t)>\varphi(1)=0$ 对 $t\in(0,1)$。$(\diamondsuit)$ 成立。✓
+</div>
+<div class="step"><b>结论：</b>$x_1+x_2>2a$ 得证。</div>
+<p><b>关键综合：</b>本题集中体现了导数压轴的<b>多个核心技巧</b>——
+<ol>
+<li><b>含参单调性讨论</b>（$a$ 正负）</li>
+<li><b>用极值 + 边界确定零点存在条件</b>（$0<a<1$）</li>
+<li><b>双零点两式相减消参数</b>得到 $(\star)$</li>
+<li><b>对称化换元 $t=x_1/x_2$</b> 转单变量</li>
+<li><b>构造关于 $t$ 的不等式 + 切线放缩</b>（$\ln t\leq t-1$）</li>
+</ol>
+是高考压轴题的<b>标准范本</b>，建议反复研读。</p>
+</div>
+</details>
+</div>
+</div>
+</section>
+<section class="chap" style="background:linear-gradient(135deg,#fbeae5,#fff8e7);text-align:center;">
+<h2 style="border:none;">🎯 考前冲刺清单</h2>
+<ul style="list-style:none;margin:0;text-align:left;display:inline-block;">
+<li>☐ 6 个切线放缩不等式默写</li>
+<li>☐ 含参讨论 3 种类型各做 3 题</li>
+<li>☐ 参变分离 + 直接讨论各做 2 题</li>
+<li>☐ 极值点偏移题必做 3 题</li>
+<li>☐ 隐零点处理必做 2 题</li>
+<li>☐ 近 3 年高考真题导数大题全做一遍</li>
+</ul>
+<p style="margin-top:20px;font-size:18px;color:var(--accent);font-weight:bold;">祝你高考导数大题拿满分!</p>
+</section>
+
+
+
+
+
+</main>
+</div>
+</body>
+</html>
